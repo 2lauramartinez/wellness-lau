@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#faf7f2">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Mi Salud · Lauri</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #faf7f2;
+    --rose: #d4a0a0; --rose-light: #f0dada; --rose-deep: #b87878;
+    --sage: #8fa88a; --sage-light: #dde8db; --sage-deep: #5e7a59;
+    --powder: #a8bfd4; --powder-light: #dce8f0; --powder-deep: #4a7a90;
+    --amber: #d4a86a; --amber-light: #f0e0c8; --amber-deep: #8b6a2e;
+    --slate: #4a5568; --slate-soft: #718096; --slate-lighter: #a0aec0;
+    --white: #ffffff;
+    --border: rgba(74,85,104,0.12);
+    --shadow: 0 2px 12px rgba(74,85,104,0.08);
+    --shadow-md: 0 4px 24px rgba(74,85,104,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--slate);
+    -webkit-tap-highlight-color: transparent;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  /* APP HEADER */
+  .app-header {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    padding: 18px 20px; box-shadow: var(--shadow);
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .app-logo { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400; }
+  .app-logo em { font-style: italic; color: var(--sage-deep); }
+  .app-date { font-size: 12px; color: var(--slate-lighter); }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+    background: var(--white); border-top: 1px solid var(--border);
+    display: flex; padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -2px 12px rgba(74,85,104,0.08);
+  }
+  .nav-item {
+    flex: 1; border: none; background: transparent; padding: 10px 0 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 10px; color: var(--slate-lighter);
+    cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .nav-item .ni { font-size: 20px; line-height: 1; filter: grayscale(0.6); opacity: 0.6; }
+  .nav-item.active { color: var(--sage-deep); font-weight: 500; }
+  .nav-item.active .ni { filter: none; opacity: 1; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 18px 16px; }
+
+  /* CARDS */
+  .acard {
+    background: var(--white); border: 1px solid var(--border); border-radius: 16px;
+    padding: 16px 18px; margin-bottom: 12px; box-shadow: var(--shadow);
+  }
+  .acard-title { font-family: 'Fraunces', serif; font-size: 16px; margin-bottom: 12px; }
+  .acard-title em { font-style: italic; }
+  .te-sage em { color: var(--sage-deep); } .te-rose em { color: var(--rose-deep); }
+  .te-powder em { color: var(--powder-deep); } .te-amber em { color: var(--amber-deep); }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .hstat {
+    background: var(--white); border: 1px solid var(--border); border-radius: 16px;
+    padding: 14px 16px; box-shadow: var(--shadow); border-left: 4px solid var(--border);
+  }
+  .hstat.hs-green { border-left-color: var(--sage); }
+  .hstat.hs-yellow { border-left-color: var(--amber); }
+  .hstat.hs-red { border-left-color: var(--rose-deep); }
+  .hstat .hl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--slate-soft); margin-bottom: 5px; }
+  .hstat .hv { font-family: 'Fraunces', serif; font-size: 23px; line-height: 1.1; }
+  .hstat .hv small { font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--slate-lighter); }
+  .hstat .hs { font-size: 11px; color: var(--slate-soft); margin-top: 4px; line-height: 1.35; }
+
+  .week-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .wpill {
+    padding: 8px 13px; border-radius: 18px; border: 1px solid var(--border);
+    background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 13px;
+    color: var(--slate-soft); cursor: pointer;
+  }
+  .wpill.on-verde { background: var(--sage-light); border-color: var(--sage); color: var(--sage-deep); font-weight: 500; }
+  .wpill.on-amarilla { background: var(--amber-light); border-color: var(--amber); color: var(--amber-deep); font-weight: 500; }
+  .wpill.on-roja { background: var(--rose-light); border-color: var(--rose-deep); color: var(--rose-deep); font-weight: 500; }
+  .wpill.on-recuperacion { background: var(--powder-light); border-color: var(--powder); color: var(--powder-deep); font-weight: 500; }
+
+  .signal-line { display: flex; gap: 9px; align-items: flex-start; font-size: 13px; line-height: 1.5; color: var(--slate-soft); padding: 6px 0; }
+  .signal-line .sd { font-size: 12px; margin-top: 2px; }
+
+  /* PILLS / FORM */
+  .fpills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fpill {
+    padding: 9px 14px; border-radius: 20px; border: 1px solid var(--border);
+    background: var(--white); color: var(--slate-soft); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; cursor: pointer; user-select: none;
+  }
+  .fpill.sel-sage { background: var(--sage-light); border-color: var(--sage); color: var(--sage-deep); font-weight: 500; }
+  .fpill.sel-rose { background: var(--rose-light); border-color: var(--rose-deep); color: var(--rose-deep); font-weight: 500; }
+  .fpill.sel-amber { background: var(--amber-light); border-color: var(--amber); color: var(--amber-deep); font-weight: 500; }
+  .fpill.sel-slate { background: var(--slate); border-color: var(--slate); color: var(--white); font-weight: 500; }
+  .ffield { margin-bottom: 14px; }
+  .flabel { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--slate-soft); margin-bottom: 8px; font-weight: 500; }
+  input[type="date"], input[type="number"], input[type="text"], textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: 12px; background: var(--cream);
+    font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--slate); padding: 11px 12px;
+  }
+  textarea { resize: vertical; min-height: 64px; }
+  input:focus, textarea:focus { outline: 2px solid var(--sage); outline-offset: -1px; }
+  .row2 { display: flex; gap: 10px; } .row2 > * { flex: 1; }
+
+  .btn-main {
+    width: 100%; padding: 15px; background: var(--sage-deep); color: white; border: none;
+    border-radius: 14px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
+    cursor: pointer; box-shadow: var(--shadow-md);
+  }
+  .btn-rose { background: var(--rose-deep); }
+  .btn-line {
+    width: 100%; padding: 12px; background: transparent; color: var(--slate-soft);
+    border: 1px solid var(--border); border-radius: 12px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; cursor: pointer; margin-top: 8px; text-align: center;
+  }
+
+  /* CALENDAR */
+  .cal-head7 { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 4px; }
+  .cal-head7 div { text-align: center; font-size: 10px; color: var(--slate-lighter); text-transform: uppercase; }
+  .cal-grid7 { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+  .cday {
+    aspect-ratio: 1; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--slate-soft); background: var(--white); border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .cday.empty { background: transparent; border: none; cursor: default; }
+  .cday.c-good { background: var(--sage-light); border-color: var(--sage); color: var(--sage-deep); }
+  .cday.c-prodrome { background: var(--amber-light); border-color: var(--amber); color: var(--amber-deep); }
+  .cday.c-migraine { background: var(--rose-light); border-color: var(--rose-deep); color: var(--rose-deep); font-weight: 500; }
+  .cday.c-today { outline: 2px solid var(--slate); outline-offset: -2px; }
+  .mnav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .mnav button { width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--border); background: var(--white); font-size: 15px; color: var(--slate-soft); cursor: pointer; }
+  .mnav .ml { font-family: 'Fraunces', serif; font-size: 16px; }
+  .legend7 { display: flex; gap: 12px; margin: 10px 0 0; flex-wrap: wrap; }
+  .legend7 div { font-size: 11px; color: var(--slate-soft); display: flex; gap: 5px; align-items: center; }
+  .ld { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ENTRIES */
+  .ecard {
+    background: var(--white); border: 1px solid var(--border); border-radius: 14px;
+    padding: 13px 15px; margin-bottom: 9px; box-shadow: var(--shadow); cursor: pointer;
+  }
+  .etop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .edate { font-weight: 500; font-size: 14px; }
+  .ebadge { font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 500; }
+  .bb-good { background: var(--sage-light); color: var(--sage-deep); }
+  .bb-prodrome { background: var(--amber-light); color: var(--amber-deep); }
+  .bb-migraine { background: var(--rose-light); color: var(--rose-deep); }
+  .etags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .etag { font-size: 12px; color: var(--slate-soft); background: var(--cream); padding: 2px 8px; border-radius: 9px; }
+
+  .sec-title { font-family: 'Fraunces', serif; font-size: 16px; margin: 24px 0 12px; display: flex; align-items: center; gap: 10px; }
+  .sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* SHEET */
+  .sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(74,85,104,0.4); z-index: 400; align-items: flex-end; }
+  .sheet-overlay.open { display: flex; }
+  .sheet {
+    background: var(--white); border-radius: 20px 20px 0 0; padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+    width: 100%; max-width: 560px; margin: 0 auto; max-height: 88vh; overflow-y: auto;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+  .sheet-title { font-family: 'Fraunces', serif; font-size: 18px; margin-bottom: 16px; }
+  .sheet-title em { font-style: italic; color: var(--rose-deep); }
+  .subq { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .subq.open { display: block; }
+
+  /* CHARTS */
+  .chart-wrap { margin: 6px 0 2px; }
+  .chart-cap { font-size: 11px; color: var(--slate-lighter); margin-top: 4px; }
+  svg text { font-family: 'DM Sans', sans-serif; }
+
+  .file-btn {
+    display: block; width: 100%; padding: 15px; background: var(--powder-deep); color: white;
+    border-radius: 14px; font-size: 15px; font-weight: 500; text-align: center; cursor: pointer;
+    box-shadow: var(--shadow-md);
+  }
+  .import-log { font-size: 13px; color: var(--slate-soft); line-height: 1.6; margin-top: 12px; }
+  .import-log b { color: var(--sage-deep); font-weight: 500; }
+
+  .empty7 { text-align: center; padding: 24px 16px; color: var(--slate-lighter); font-size: 13.5px; line-height: 1.6; }
+
+  .review-text { font-size: 14px; line-height: 1.65; color: var(--slate); }
+  .review-text h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 16px 0 8px; color: var(--powder-deep); font-weight: 400; }
+  .review-text p { margin-bottom: 10px; }
+  .review-text li { margin: 0 0 8px 18px; }
+
+  .toast {
+    position: fixed; bottom: calc(86px + env(safe-area-inset-bottom)); left: 50%;
+    transform: translateX(-50%) translateY(90px); background: var(--slate); color: white;
+    padding: 10px 22px; border-radius: 20px; font-size: 13px; z-index: 999;
+    transition: transform 0.3s ease; white-space: nowrap; pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ===== PLAN (scoped) ===== */
+
+  #view-plan * { box-sizing: border-box; margin: 0; padding: 0; }
+  #view-plan {
+    --bg: #fbf8f3;
+    --bg-card: #ffffff;
+    --bg-soft: #f3ede2;
+    --ink: #2a2730;
+    --ink-soft: #6b6772;
+    --ink-faint: #a8a4ae;
+    --line: #e8dfd0;
+    --line-soft: #f1ebe0;
+    --terracotta: #b5687a;
+    --terracotta-soft: #f5e1e6;
+    --sage: #7a9676;
+    --sage-soft: #e7ede0;
+    --amber: #c89c5a;
+    --amber-soft: #f5ead4;
+    --rose: #c97a8a;
+    --rose-soft: #f5e3e8;
+    --indigo: #6b87a8;
+    --indigo-soft: #e0e8f0;
+  }
+  #view-plan {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* TABS */
+  #view-plan .tabs {
+    position: sticky; top: 0;
+    background: rgba(251, 248, 243, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    z-index: 50;
+    padding: 12px 16px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  #view-plan .tabs::-webkit-scrollbar { display: none; }
+  #view-plan .tab {
+    padding: 8px 14px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  #view-plan .tab.active {
+    color: var(--terracotta);
+    background: var(--terracotta-soft);
+  }
+
+  /* CONTENT */
+  #view-plan .content { padding: 24px 20px 40px; max-width: 900px; margin: 0 auto; }
+  #view-plan .panel { display: none; }
+  #view-plan .panel.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* HEADER */
+  #view-plan .panel-head { margin-bottom: 24px; }
+  #view-plan .panel-num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--terracotta);
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  #view-plan .panel-title {
+    font-family: 'Fraunces', serif;
+    font-size: 34px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  #view-plan .panel-title em { font-style: italic; color: var(--terracotta); }
+  #view-plan .panel-lead {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* CARDS */
+  #view-plan .card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+  #view-plan .card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+  #view-plan .card-sub {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  #view-plan .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    margin: 24px 0 12px;
+    letter-spacing: -0.01em;
+  }
+  #view-plan .section-title:first-child { margin-top: 0; }
+
+  /* GRID */
+  #view-plan .grid-2, #view-plan .grid-3, #view-plan .grid-4 { display: grid; gap: 10px; }
+  #view-plan .grid-2 { grid-template-columns: 1fr 1fr; }
+  #view-plan .grid-3 { grid-template-columns: 1fr; }
+  #view-plan .grid-4 { grid-template-columns: 1fr 1fr; }
+  @media (min-width: 600px) {
+    #view-plan .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    #view-plan .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  /* STATS */
+  #view-plan .stat {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  #view-plan .stat .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); margin-bottom: 6px; }
+  #view-plan .stat .value { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 400; line-height: 1; letter-spacing: -0.02em; }
+  #view-plan .stat .value .unit { font-size: 13px; color: var(--ink-soft); font-style: italic; }
+  #view-plan .stat .sub { font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
+
+  /* TREATMENT */
+  #view-plan .treatment-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  #view-plan .treatment-row:last-child { border-bottom: none; }
+  #view-plan .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--terracotta); }
+  #view-plan .treatment-name { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; }
+  #view-plan .treatment-info { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  #view-plan .treatment-when { font-family: 'Fraunces', serif; font-style: italic; color: var(--terracotta); font-size: 13px; text-align: right; }
+
+  /* MED CARDS */
+  #view-plan .med-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    border-left: 3px solid var(--terracotta);
+  }
+  #view-plan .med-card.indigo { border-left-color: var(--indigo); }
+  #view-plan .med-card.sage { border-left-color: var(--sage); }
+  #view-plan .med-card h4 { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; margin-bottom: 2px; }
+  #view-plan .med-card .med-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); margin-bottom: 12px; }
+  #view-plan .med-card h5 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--terracotta); margin: 10px 0 4px; font-weight: 500; }
+  #view-plan .med-card p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+
+  /* PRINCIPLES */
+  #view-plan .principle {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  #view-plan .principle-num { font-family: 'Fraunces', serif; font-style: italic; font-size: 30px; color: var(--terracotta-soft); position: absolute; right: 14px; top: 10px; line-height: 1; }
+  #view-plan .principle h4 { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; margin-bottom: 8px; padding-right: 40px; line-height: 1.2; }
+  #view-plan .principle p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+
+  /* WEEK TYPES */
+  #view-plan .week-type { border-radius: 12px; padding: 16px; border: 1px solid; }
+  #view-plan .week-type.green { background: var(--sage-soft); border-color: rgba(107,139,93,0.3); }
+  #view-plan .week-type.yellow { background: var(--amber-soft); border-color: rgba(200,147,57,0.3); }
+  #view-plan .week-type.red { background: var(--rose-soft); border-color: rgba(168,91,110,0.3); }
+  #view-plan .week-type.indigo { background: var(--indigo-soft); border-color: rgba(74,93,138,0.3); }
+  #view-plan .week-tag { display: inline-block; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; padding: 3px 8px; border-radius: 20px; margin-bottom: 10px; font-weight: 500; color: white; }
+  #view-plan .week-type.green .week-tag { background: var(--sage); }
+  #view-plan .week-type.yellow .week-tag { background: var(--amber); }
+  #view-plan .week-type.red .week-tag { background: var(--rose); }
+  #view-plan .week-type.indigo .week-tag { background: var(--indigo); }
+  #view-plan .week-type h4 { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 500; margin-bottom: 6px; }
+  #view-plan .week-type p { font-size: 13px; line-height: 1.5; }
+
+  /* CALENDAR */
+  #view-plan .calendar {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  #view-plan .cal-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 1fr;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 13px;
+    align-items: center;
+  }
+  #view-plan .cal-row:last-child { border-bottom: none; }
+  #view-plan .cal-row.header { background: var(--bg-soft); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); padding: 10px 14px; }
+  #view-plan .day-name { font-family: 'Fraunces', serif; font-weight: 500; color: var(--terracotta); }
+  #view-plan .day-content small { display: block; font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+
+  /* MEAL */
+  #view-plan .meal {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  #view-plan .meal:last-child { border-bottom: none; }
+  #view-plan .meal-time { font-family: 'Fraunces', serif; font-style: italic; color: var(--terracotta); font-size: 14px; font-weight: 500; }
+  #view-plan .meal h5 { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+  #view-plan .meal p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+  #view-plan .meal .example { margin-top: 8px; padding: 10px 12px; background: var(--bg-soft); border-radius: 8px; font-size: 12px; }
+  #view-plan .meal .example strong { font-family: 'Fraunces', serif; color: var(--terracotta); font-style: italic; margin-right: 6px; }
+
+  /* FOOD LISTS */
+  #view-plan .food-col { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  #view-plan .food-col h4 { font-family: 'Fraunces', serif; font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  #view-plan .food-badge { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; padding: 3px 7px; border-radius: 4px; font-weight: 500; color: white; }
+  #view-plan .food-badge.green { background: var(--sage); }
+  #view-plan .food-badge.amber { background: var(--amber); }
+  #view-plan .food-badge.red { background: var(--rose); }
+  #view-plan .food-col ul { list-style: none; }
+  #view-plan .food-col li { padding: 5px 0; font-size: 13px; border-bottom: 1px solid var(--line-soft); }
+  #view-plan .food-col li:last-child { border-bottom: none; }
+  #view-plan .food-col h5 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); margin: 12px 0 4px; font-weight: 500; }
+  #view-plan .food-col h5:first-of-type { margin-top: 0; }
+
+  /* NIGHT */
+  #view-plan .night-step {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  #view-plan .night-step:last-child { border-bottom: none; }
+  #view-plan .night-time { font-family: 'Fraunces', serif; font-style: italic; color: var(--indigo); font-size: 14px; font-weight: 500; }
+  #view-plan .night-action { font-size: 13px; line-height: 1.5; }
+  #view-plan .night-action strong { font-family: 'Fraunces', serif; color: var(--terracotta); font-weight: 500; }
+
+  /* SLEEP TABLE */
+  #view-plan .sleep-table { background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  #view-plan .sleep-row { display: grid; grid-template-columns: 90px 1fr 1fr; padding: 10px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; align-items: center; }
+  #view-plan .sleep-row.header { background: var(--bg-soft); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); }
+  #view-plan .sleep-row:last-child { border-bottom: none; }
+  #view-plan .sleep-week { font-family: 'Fraunces', serif; font-weight: 500; color: var(--terracotta); }
+
+  /* RULES */
+  #view-plan .rule { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); align-items: flex-start; }
+  #view-plan .rule:last-child { border-bottom: none; }
+  #view-plan .rule-num { font-family: 'Fraunces', serif; font-style: italic; font-size: 19px; color: var(--terracotta); min-width: 24px; line-height: 1; margin-top: 1px; }
+  #view-plan .rule-text { font-size: 13px; line-height: 1.5; }
+  #view-plan .rule-text strong { color: var(--terracotta); font-weight: 500; }
+
+  /* SIGNALS */
+  #view-plan .signal-card { border-radius: 12px; padding: 16px; border: 1px solid; }
+  #view-plan .signal-card.green { background: var(--sage-soft); border-color: rgba(107,139,93,0.3); }
+  #view-plan .signal-card.yellow { background: var(--amber-soft); border-color: rgba(200,147,57,0.3); }
+  #view-plan .signal-card.red { background: var(--rose-soft); border-color: rgba(168,91,110,0.3); }
+  #view-plan .signal-card h4 { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; margin-bottom: 8px; }
+  #view-plan .signal-card ul { list-style: none; }
+  #view-plan .signal-card li { padding: 4px 0 4px 16px; font-size: 12px; position: relative; line-height: 1.5; }
+  #view-plan .signal-card li:before { content: '→'; position: absolute; left: 0; color: var(--ink-soft); }
+
+  /* METRIC BLOCK */
+  #view-plan .metric-block { background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  #view-plan .metric-block h4 { font-family: 'Fraunces', serif; font-size: 16px; margin-bottom: 10px; font-weight: 500; }
+  #view-plan .metric-block ul { list-style: none; }
+  #view-plan .metric-block li { padding: 4px 0 4px 14px; font-size: 13px; color: var(--ink-soft); position: relative; line-height: 1.4; }
+  #view-plan .metric-block li:before { content: '·'; position: absolute; left: 0; color: var(--terracotta); font-size: 18px; line-height: 1; top: 2px; }
+  #view-plan .metric-block strong { color: var(--ink); font-weight: 500; }
+
+  /* TIP */
+  #view-plan .tip { background: var(--indigo-soft); border-left: 3px solid var(--indigo); border-radius: 0 10px 10px 0; padding: 12px 14px; font-size: 13px; line-height: 1.5; margin: 8px 0; }
+  #view-plan .tip strong { color: var(--indigo); font-weight: 500; font-family: 'Fraunces', serif; }
+
+  #view-plan .tabs { top: 0; }
+  #view-plan { background: transparent; }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-logo">mi <em>salud</em></div>
+  <div class="app-date" id="appDate"></div>
+</div>
+
+<!-- ═══════════ HOY ═══════════ -->
+<div class="view active" id="view-hoy">
+  <div class="wrap">
+    <div class="acard">
+      <div class="acard-title te-sage">Semana <em>actual</em></div>
+      <div class="week-pills" id="weekPills"></div>
+      <div id="weekHint" style="font-size:12px;color:var(--slate-soft);margin-top:10px;line-height:1.5"></div>
+    </div>
+
+    <div class="stat-grid" id="hoyStats"></div>
+
+    <div class="acard">
+      <div class="acard-title te-amber">Señales</div>
+      <div id="hoySignals"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MIGRAÑAS ═══════════ -->
+<div class="view" id="view-migranas">
+  <div class="wrap">
+    <button class="btn-main btn-rose" onclick="openMigForm()">✏️ Registrar día</button>
+
+    <div class="sec-title">Calendario</div>
+    <div class="acard">
+      <div class="mnav">
+        <button onclick="chMonth(-1)">‹</button>
+        <div class="ml" id="calLabel">—</div>
+        <button onclick="chMonth(1)">›</button>
+      </div>
+      <div class="cal-head7"><div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
+      <div class="cal-grid7" id="calGrid"></div>
+      <div class="legend7">
+        <div><div class="ld" style="background:var(--sage-light);border:1px solid var(--sage)"></div>Bueno</div>
+        <div><div class="ld" style="background:var(--amber-light);border:1px solid var(--amber)"></div>Pródromo</div>
+        <div><div class="ld" style="background:var(--rose-light);border:1px solid var(--rose-deep)"></div>Migraña</div>
+      </div>
+    </div>
+
+    <div class="sec-title">Historial</div>
+    <div id="migList"></div>
+  </div>
+</div>
+
+<!-- ═══════════ DATOS ═══════════ -->
+<div class="view" id="view-datos">
+  <div class="wrap">
+    <div class="acard">
+      <div class="acard-title">Periodo de <em>análisis</em></div>
+      <div class="fpills" id="periodPills"></div>
+      <div id="periodCompare" style="margin-top:14px"></div>
+    </div>
+
+    <div class="acard">
+      <div class="acard-title te-powder">Importar de <em>Garmin</em></div>
+      <p style="font-size:13px;color:var(--slate-soft);line-height:1.55;margin-bottom:12px">
+        Selecciona uno o varios CSV exportados de Garmin Connect (VFC, sueño, actividades, edad física).
+        La app detecta cada tipo y fusiona los datos sin duplicar.
+      </p>
+      <label class="file-btn">📥 Seleccionar archivos CSV
+        <input type="file" accept=".csv,text/csv" multiple style="display:none" onchange="importCSVs(this.files)">
+      </label>
+      <div class="import-log" id="importLog"></div>
+    </div>
+
+    <div class="acard">
+      <div class="acard-title te-powder">VFC <em>nocturna</em></div>
+      <div class="chart-wrap" id="chartHRV"></div>
+    </div>
+
+    <div class="acard">
+      <div class="acard-title te-powder">Puntuación de <em>sueño</em> semanal</div>
+      <div class="chart-wrap" id="chartSleep"></div>
+    </div>
+
+    <div class="acard">
+      <div class="acard-title te-sage">Actividad por <em>mes</em></div>
+      <div class="chart-wrap" id="chartAct"></div>
+    </div>
+
+    <div class="acard">
+      <div class="acard-title te-amber">Composición <em>corporal</em> · Fitdays</div>
+      <div class="fpills" id="bodyMetricPills" style="margin-bottom:10px"></div>
+      <div class="chart-wrap" id="chartBody"></div>
+      <div id="bodyLast" style="margin-top:12px"></div>
+      <p style="font-size:13px;color:var(--slate-soft);line-height:1.55;margin:12px 0">
+        Las mediciones entran por capturas: envía 1–2 pantallazos de Fitdays a Claude,
+        te devuelve un archivo <b>mediciones.json</b> con todos los valores extraídos, y lo importas aquí.
+      </p>
+      <label class="file-btn" style="background:var(--amber-deep)">📥 Importar mediciones.json
+        <input type="file" accept=".json,application/json" style="display:none" onchange="importBody(this.files)">
+      </label>
+    </div>
+
+    <div class="acard">
+      <div class="acard-title">Copia de <em>seguridad</em></div>
+      <p style="font-size:13px;color:var(--slate-soft);line-height:1.55;margin-bottom:12px">
+        Todos los datos viven en el almacenamiento local de Safari en este dispositivo
+        (no salen de él, pero pueden perderse si se borran los datos del navegador).
+        Las copias son tu seguro: guárdalas en Archivos o iCloud.
+      </p>
+      <div id="backupStatus" style="font-size:12px;color:var(--slate-lighter);margin-bottom:10px"></div>
+      <button class="btn-line" style="margin:0" onclick="exportBackup()">💾 Exportar copia completa (JSON)</button>
+      <label class="btn-line" style="display:block">📂 Restaurar copia
+        <input type="file" accept=".json,application/json" style="display:none" onchange="importBackup(this.files)">
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PLAN (embebido) ═══════════ -->
+<div class="view" id="view-plan">
+
+
+<div class="tabs" id="plan-tabs">
+  <button class="tab active" data-tab="perfil">Perfil</button>
+  <button class="tab" data-tab="tratamiento">Tratamiento</button>
+  <button class="tab" data-tab="principios">Principios</button>
+  <button class="tab" data-tab="nutricion">Nutrición</button>
+  <button class="tab" data-tab="deporte">Deporte</button>
+  <button class="tab" data-tab="sueno">Sueño</button>
+  <button class="tab" data-tab="hogar">Hogar</button>
+  <button class="tab" data-tab="progreso">Progreso</button>
+</div>
+
+<div class="content">
+
+<!-- PERFIL -->
+<div class="panel active" id="planpanel-perfil">
+  <div class="panel-head">
+    <div class="panel-num">i.</div>
+    <h1 class="panel-title">El <em>punto</em> de partida</h1>
+    <p class="panel-lead">Lo que sabemos de ti tras un año de datos.</p>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:16px">
+    <div class="stat">
+      <div class="label">Peso actual</div>
+      <div class="value">47,5<span class="unit"> kg</span></div>
+      <div class="sub">+1,9 en el año</div>
+    </div>
+    <div class="stat">
+      <div class="label">IMC</div>
+      <div class="value">17,2</div>
+      <div class="sub">por debajo de saludable</div>
+    </div>
+    <div class="stat">
+      <div class="label">Músculo ganado</div>
+      <div class="value">+2,0<span class="unit"> kg</span></div>
+      <div class="sub">38,5 kg total</div>
+    </div>
+    <div class="stat">
+      <div class="label">Grasa visceral</div>
+      <div class="value">1,0</div>
+      <div class="sub">excelente · estable</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-sub">Lecturas positivas</div>
+      <div class="card-title">Tu cuerpo responde</div>
+      <p style="color:var(--ink-soft);font-size:13px;line-height:1.6">Has ganado 2,0 kg de músculo (más que el peso total). BMR subió 24 kcal. Grasa visceral estable y baja (1,0). Mayo marcó un cambio con 11 sesiones de gimnasio.</p>
+    </div>
+    <div class="card">
+      <div class="card-sub">A trabajar</div>
+      <div class="card-title">Lo que pide atención</div>
+      <p style="color:var(--ink-soft);font-size:13px;line-height:1.6">IMC 17,2 sigue por debajo de saludable — bueno seguir ganando masa. Grasa corporal subió ligeramente (+1,2%). Sueño tardío y mediocre. VFC bajo rango personal en momentos de carga.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;padding:14px 16px;background:var(--sage-soft);border-left:3px solid var(--sage);border-radius:0 10px 10px 0">
+    <p style="font-size:13px;line-height:1.5;color:var(--ink)"><strong style="font-family:'Fraunces',serif;color:var(--sage);font-weight:500">Nota importante:</strong> con tu IMC actual, ganar peso es positivo. El objetivo no es bajar, es seguir construyendo músculo. La pequeña subida de grasa % es secundaria al hecho de que estás recomponiendo.</p>
+  </div>
+</div>
+
+<!-- TRATAMIENTO -->
+<div class="panel" id="planpanel-tratamiento">
+  <div class="panel-head">
+    <div class="panel-num">ii.</div>
+    <h1 class="panel-title">El <em>tratamiento</em></h1>
+    <p class="panel-lead">Tu medicación y lo que implica para el día a día.</p>
+  </div>
+
+  <div class="card">
+    <div class="treatment-row">
+      <div class="dot"></div>
+      <div>
+        <div class="treatment-name">Botox</div>
+        <div class="treatment-info">Inyección preventiva en cabeza y cuello</div>
+      </div>
+      <div class="treatment-when">cada 3 meses<br>próx. Junio</div>
+    </div>
+    <div class="treatment-row">
+      <div class="dot"></div>
+      <div>
+        <div class="treatment-name">Vyepti</div>
+        <div class="treatment-info">Infusión intravenosa anti-CGRP</div>
+      </div>
+      <div class="treatment-when">cada 3 meses<br>próx. Julio</div>
+    </div>
+    <div class="treatment-row">
+      <div class="dot"></div>
+      <div>
+        <div class="treatment-name">Deprax 150 mg</div>
+        <div class="treatment-info">Trazodona nocturna</div>
+      </div>
+      <div class="treatment-when">cada noche<br>22:30</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Efectos a considerar</h2>
+  <div class="grid-3">
+    <div class="med-card">
+      <h4>Botox</h4>
+      <div class="med-tag">Sin efectos relevantes</div>
+      <p>A dosis preventivas no tiene efectos sistémicos significativos. Respetar 24-48h sin entrenamiento intenso.</p>
+    </div>
+    <div class="med-card indigo">
+      <h4>Vyepti</h4>
+      <div class="med-tag">El que más notas</div>
+      <h5>Documentado en tu caso</h5>
+      <p>Caída de pelo (efluvio telógeno), pequeña desregulación menstrual.</p>
+      <h5>Vigilar</h5>
+      <p>Tensión arterial, fenómeno de Raynaud.</p>
+    </div>
+    <div class="med-card sage">
+      <h4>Deprax</h4>
+      <div class="med-tag">Más influencia de la que crees</div>
+      <h5>Probable aunque no lo notes</h5>
+      <p>Hipotensión ortostática, resaca matutina, posible aumento de apetito.</p>
+      <h5>Estrategia</h5>
+      <p>Tomar 22:30, levantarse despacio.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PRINCIPIOS -->
+<div class="panel" id="planpanel-principios">
+  <div class="panel-head">
+    <div class="panel-num">iii.</div>
+    <h1 class="panel-title">Los <em>principios</em> base</h1>
+    <p class="panel-lead">Las 9 ideas que sostienen todo lo demás.</p>
+  </div>
+
+  <div class="grid-3">
+    <div class="principle"><div class="principle-num">i</div><h4>No eres una persona sana sedentaria</h4><p>Tu sistema nervioso está bajo carga. Trabajamos con tu cuerpo, no contra él.</p></div>
+    <div class="principle"><div class="principle-num">ii</div><h4>Consistencia imperfecta gana</h4><p>Mejor 2 sesiones suaves a la semana durante un año, que 6 brutales seguidas de un mes parada.</p></div>
+    <div class="principle"><div class="principle-num">iii</div><h4>Cuatro tipos de semanas</h4><p>Verde, amarilla, roja y de recuperación. Cada una con su versión del plan.</p></div>
+    <div class="principle"><div class="principle-num">iv</div><h4>Los pródromos son tu superpoder</h4><p>Cuando aparezcan, el plan cambia inmediatamente.</p></div>
+    <div class="principle"><div class="principle-num">v</div><h4>Nutrición para energía</h4><p>No para perder peso. Glucosa estable, proteína suficiente, micronutrientes.</p></div>
+    <div class="principle"><div class="principle-num">vi</div><h4>Calidad sobre cantidad de sueño</h4><p>Duermes lo suficiente. El problema es la hora y la calidad.</p></div>
+    <div class="principle"><div class="principle-num">vii</div><h4>Jerarquía del entrenamiento</h4><p>Fuerza > Pilates > Cardio suave > Cardio intenso. En ese orden.</p></div>
+    <div class="principle"><div class="principle-num">viii</div><h4>Medimos lo correcto</h4><p>VFC, crisis, sueño, composición. No solo el peso.</p></div>
+    <div class="principle"><div class="principle-num">ix</div><h4>El plan está vivo</h4><p>Se ajusta con datos, no con impulsos.</p></div>
+  </div>
+
+  <h2 class="section-title">Las cuatro semanas posibles</h2>
+  <div class="grid-2">
+    <div class="week-type green">
+      <span class="week-tag">Verde</span>
+      <h4>Semana buena</h4>
+      <p>Energía estable. Plan completo: 4 entrenos + caminar diario.</p>
+    </div>
+    <div class="week-type yellow">
+      <span class="week-tag">Amarilla</span>
+      <h4>Post-tratamiento o premenstrual</h4>
+      <p>Mantienes estructura, bajas intensidad.</p>
+    </div>
+    <div class="week-type red">
+      <span class="week-tag">Roja</span>
+      <h4>Crisis activa</h4>
+      <p>Supervivencia y mínimo daño. No entrenas.</p>
+    </div>
+    <div class="week-type indigo">
+      <span class="week-tag">Recuperación</span>
+      <h4>Post-crisis</h4>
+      <p>Vuelta progresiva. Nunca compensar lo perdido.</p>
+    </div>
+  </div>
+</div>
+
+<!-- NUTRICION -->
+<div class="panel" id="planpanel-nutricion">
+  <div class="panel-head">
+    <div class="panel-num">iv.</div>
+    <h1 class="panel-title">La <em>nutrición</em></h1>
+    <p class="panel-lead">Comer cada 3-4 horas. Proteína siempre. Sin gluten, sin cocinar apenas.</p>
+  </div>
+
+  <h2 class="section-title">Estructura diaria</h2>
+  <div class="card">
+    <div class="meal">
+      <div class="meal-time">07:30</div>
+      <div>
+        <h5>Despertar e hidratación</h5>
+        <p>500 ml agua. Levántate despacio (hipotensión Deprax). Luz natural si puedes.</p>
+      </div>
+    </div>
+    <div class="meal">
+      <div class="meal-time">08:30</div>
+      <div>
+        <h5>Desayuno</h5>
+        <p>Proteína + grasa buena + hidrato complejo. Café aquí si tomas.</p>
+        <div class="example"><strong>Idea</strong>Yogur griego + frutos rojos + nueces + avena sin gluten</div>
+      </div>
+    </div>
+    <div class="meal">
+      <div class="meal-time">11:00</div>
+      <div>
+        <h5>Media mañana</h5>
+        <p>Opcional, recomendable si entrenas o vas a oficina.</p>
+        <div class="example"><strong>Idea</strong>Puñado de almendras + fruta. O yogur griego pequeño.</div>
+      </div>
+    </div>
+    <div class="meal">
+      <div class="meal-time">14:00</div>
+      <div>
+        <h5>Comida</h5>
+        <p>Proteína (palma) + verdura (mitad plato) + hidrato (puño) + grasa (cdta. aceite).</p>
+        <div class="example"><strong>Idea</strong>Pollo + ensalada + arroz + aguacate</div>
+      </div>
+    </div>
+    <div class="meal">
+      <div class="meal-time">17:00</div>
+      <div>
+        <h5>Merienda · NO opcional</h5>
+        <p>Evita bajón y previene disparadores de migraña.</p>
+        <div class="example"><strong>Idea</strong>Yogur con fruta y semillas. Hummus. Batido proteína.</div>
+      </div>
+    </div>
+    <div class="meal">
+      <div class="meal-time">20:30</div>
+      <div>
+        <h5>Cena</h5>
+        <p>Ligera con proteína + hidrato pequeño (favorece sueño con trazodona).</p>
+        <div class="example"><strong>Idea</strong>Tortilla francesa + ensalada + tostadas de arroz</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Alimentos</h2>
+  <div class="grid-3">
+    <div class="food-col">
+      <h4><span class="food-badge green">Amigos</span></h4>
+      <h5>Proteínas</h5>
+      <ul><li>Huevos, pescado azul</li><li>Pollo, pavo</li><li>Yogur griego, kéfir</li><li>Legumbres, conservas</li></ul>
+      <h5>Hidratos sin gluten</h5>
+      <ul><li>Arroz, patata, boniato</li><li>Quinoa, mijo</li><li>Avena certificada</li><li>Tortitas arroz/maíz</li></ul>
+      <h5>Vegetales y fruta</h5>
+      <ul><li>Espinacas, brócoli</li><li>Frutos rojos, plátano</li><li>Aguacate</li></ul>
+      <h5>Grasas</h5>
+      <ul><li>AOVE, frutos secos</li><li>Semillas: chía, lino</li></ul>
+    </div>
+    <div class="food-col">
+      <h4><span class="food-badge amber">Moderar</span></h4>
+      <ul>
+        <li>Café · máx 1-2 antes 14h</li>
+        <li>Té</li>
+        <li>Chocolate negro 85%+</li>
+        <li>Quesos curados</li>
+        <li>Embutidos de calidad</li>
+        <li>Vino tinto puntual</li>
+      </ul>
+    </div>
+    <div class="food-col">
+      <h4><span class="food-badge red">Evitar</span></h4>
+      <ul>
+        <li>Glutamato (E621)</li>
+        <li>Nitritos: embutidos baratos</li>
+        <li>Aspartamo: light/zero</li>
+        <li>Quesos azules</li>
+        <li>Alcohol</li>
+        <li>Ayunos +5-6h</li>
+        <li>Azúcar libre, refrescos</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 class="section-title">Cocina mínima</h2>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-sub">Domingo · 45-60 min</div>
+      <div class="card-title">Batch cooking semanal</div>
+      <ol style="padding-left:18px;color:var(--ink-soft);font-size:13px;line-height:1.8">
+        <li>Cocer 6 huevos</li>
+        <li>Pollo al horno · 35 min 200°</li>
+        <li>Verdura asada · 30 min 200°</li>
+        <li>Arroz o quinoa</li>
+        <li>Lavar verdura cruda</li>
+      </ol>
+      <p style="margin-top:10px;font-style:italic;font-family:'Fraunces',serif;color:var(--terracotta);font-size:13px">3 comidas y 2-3 cenas en 5 min cada una.</p>
+    </div>
+    <div class="card">
+      <div class="card-sub">Días malos</div>
+      <div class="card-title">Plan B sin cocinar</div>
+      <ul style="list-style:none;color:var(--ink-soft);font-size:13px;line-height:1.8">
+        <li>Yogur griego + plátano + miel</li>
+        <li>Tostadas arroz + aguacate + huevo</li>
+        <li>Lata pescado + tortitas + tomate</li>
+        <li>Batido proteína + plátano + leche</li>
+        <li>Caldo + tortitas + queso</li>
+      </ul>
+      <p style="margin-top:10px;font-style:italic;font-family:'Fraunces',serif;color:var(--terracotta);font-size:13px">Algo es siempre mejor que nada.</p>
+    </div>
+  </div>
+
+  <h2 class="section-title">Suplementación a consultar</h2>
+  <div class="card">
+    <div class="grid-3" style="gap:16px">
+      <div><div style="font-family:'Fraunces',serif;font-size:15px;font-weight:500;color:var(--terracotta)">Magnesio</div><div style="font-size:11px;color:var(--ink-soft);margin-top:2px">Citrato/bisglicinato 300-400 mg noche</div></div>
+      <div><div style="font-family:'Fraunces',serif;font-size:15px;font-weight:500;color:var(--terracotta)">Riboflavina B2</div><div style="font-size:11px;color:var(--ink-soft);margin-top:2px">400 mg/día · evidencia clase A</div></div>
+      <div><div style="font-family:'Fraunces',serif;font-size:15px;font-weight:500;color:var(--terracotta)">Coenzima Q10</div><div style="font-size:11px;color:var(--ink-soft);margin-top:2px">100-300 mg/día</div></div>
+      <div><div style="font-family:'Fraunces',serif;font-size:15px;font-weight:500;color:var(--terracotta)">Omega-3</div><div style="font-size:11px;color:var(--ink-soft);margin-top:2px">1-2 g/día EPA+DHA</div></div>
+      <div><div style="font-family:'Fraunces',serif;font-size:15px;font-weight:500;color:var(--terracotta)">Vitamina D</div><div style="font-size:11px;color:var(--ink-soft);margin-top:2px">Según analítica</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DEPORTE -->
+<div class="panel" id="planpanel-deporte">
+  <div class="panel-head">
+    <div class="panel-num">v.</div>
+    <h1 class="panel-title">El <em>deporte</em></h1>
+    <p class="panel-lead">4 días de entrenamiento. Mañanas suaves, tardes intensas. Pilates L y X.</p>
+  </div>
+
+  <h2 class="section-title">Semana tipo (verde)</h2>
+  <div class="calendar">
+    <div class="cal-row header"><div>Día</div><div>Mañana</div><div>Tarde</div></div>
+    <div class="cal-row"><div class="day-name">Lun</div><div class="day-content"><small>Mañana</small>Movilidad 10'</div><div class="day-content"><small>Tarde</small>Pilates</div></div>
+    <div class="cal-row"><div class="day-name">Mar</div><div class="day-content"><small>Mañana</small>Fuerza tren superior</div><div class="day-content"><small>Tarde</small>Caminar 20-30'</div></div>
+    <div class="cal-row"><div class="day-name">Mié</div><div class="day-content"><small>Mañana</small>Movilidad 10'</div><div class="day-content"><small>Tarde</small>Pilates</div></div>
+    <div class="cal-row"><div class="day-name">Jue</div><div class="day-content"><small>Mañana</small>Fuerza tren inferior</div><div class="day-content"><small>Tarde</small>Caminar 20-30'</div></div>
+    <div class="cal-row"><div class="day-name">Vie</div><div class="day-content"><small>Mañana</small>Caminar largo 40-60'</div><div class="day-content"><small>Tarde</small>Descanso</div></div>
+    <div class="cal-row"><div class="day-name">Sáb</div><div class="day-content"><small>Mañana</small>Cardio libre 30-45'</div><div class="day-content"><small>—</small>—</div></div>
+    <div class="cal-row"><div class="day-name">Dom</div><div class="day-content"><small>Mañana</small>Paseo + estiramientos</div><div class="day-content"><small>Tarde</small>Batch cooking</div></div>
+  </div>
+
+  <h2 class="section-title">Sesiones de fuerza</h2>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-sub">Martes mañana</div>
+      <div class="card-title">Tren superior + core</div>
+      <div style="font-size:12px;color:var(--ink-soft);line-height:1.7">
+        <p><strong style="color:var(--terracotta);font-family:'Fraunces',serif">Calentamiento 5'</strong></p>
+        <p style="margin-top:8px"><strong style="color:var(--terracotta);font-family:'Fraunces',serif">Principal 30-35'</strong><br>3 series · 10-12 reps · 60-90s<br>• Remo<br>• Press hombros<br>• Press banca o flexiones<br>• Bíceps + tríceps superserie</p>
+        <p style="margin-top:8px"><strong style="color:var(--terracotta);font-family:'Fraunces',serif">Core 8-10'</strong><br>Plancha, dead bug, bird dog, pallof</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-sub">Jueves mañana</div>
+      <div class="card-title">Tren inferior + glúteos</div>
+      <div style="font-size:12px;color:var(--ink-soft);line-height:1.7">
+        <p><strong style="color:var(--terracotta);font-family:'Fraunces',serif">Calentamiento 5'</strong></p>
+        <p style="margin-top:8px"><strong style="color:var(--terracotta);font-family:'Fraunces',serif">Principal 30-35'</strong><br>• Sentadilla goblet 3×10-12<br>• Peso muerto rumano 3×10-12<br>• Zancadas 3×8 por pierna<br>• Hip thrust 3×12-15</p>
+        <p style="margin-top:8px"><strong style="color:var(--terracotta);font-family:'Fraunces',serif">Glúteo aislado 8-10'</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Reglas de oro</h2>
+  <div class="card">
+    <div class="rule"><div class="rule-num">1</div><div class="rule-text"><strong>Calentamiento siempre.</strong> Mínimo 5 min. Innegociable con trazodona.</div></div>
+    <div class="rule"><div class="rule-num">2</div><div class="rule-text"><strong>Hidrátate</strong> antes, durante y después.</div></div>
+    <div class="rule"><div class="rule-num">3</div><div class="rule-text"><strong>No te levantes brusca.</strong> Sentada → rodillas → de pie con calma.</div></div>
+    <div class="rule"><div class="rule-num">4</div><div class="rule-text"><strong>Respira por la nariz</strong> en esfuerzos moderados.</div></div>
+    <div class="rule"><div class="rule-num">5</div><div class="rule-text"><strong>Pródromo → para.</strong> Sin terminar la serie.</div></div>
+    <div class="rule"><div class="rule-num">6</div><div class="rule-text"><strong>VFC baja → menos intensidad</strong> el día siguiente.</div></div>
+    <div class="rule"><div class="rule-num">7</div><div class="rule-text"><strong>Registra todo en Garmin.</strong></div></div>
+    <div class="rule"><div class="rule-num">8</div><div class="rule-text"><strong>24h sin entrenar</strong> tras Vyepti.</div></div>
+    <div class="rule"><div class="rule-num">9</div><div class="rule-text"><strong>24-48h sin entrenar intenso</strong> tras Botox.</div></div>
+    <div class="rule"><div class="rule-num">10</div><div class="rule-text"><strong>Música moderada.</strong> Sobreestimulación es disparador.</div></div>
+  </div>
+</div>
+
+<!-- SUEÑO -->
+<div class="panel" id="planpanel-sueno">
+  <div class="panel-head">
+    <div class="panel-num">vi.</div>
+    <h1 class="panel-title">El <em>sueño</em></h1>
+    <p class="panel-lead">La palanca con más potencial. Objetivo: 23:00-23:30 acostada.</p>
+  </div>
+
+  <h2 class="section-title">Plan de transición</h2>
+  <div class="sleep-table">
+    <div class="sleep-row header"><div>Semana</div><div>Acostarte</div><div>Despertar</div></div>
+    <div class="sleep-row"><div class="sleep-week">Semana 1</div><div>00:45</div><div>7:45</div></div>
+    <div class="sleep-row"><div class="sleep-week">Semana 2</div><div>00:30</div><div>7:30</div></div>
+    <div class="sleep-row"><div class="sleep-week">Semana 3</div><div>00:15</div><div>7:15</div></div>
+    <div class="sleep-row"><div class="sleep-week">Semana 4</div><div>00:00</div><div>7:15</div></div>
+    <div class="sleep-row"><div class="sleep-week">Semana 5</div><div>23:45</div><div>7:15</div></div>
+    <div class="sleep-row"><div class="sleep-week">Semana 6+</div><div>23:00-23:30</div><div>7:00-7:30</div></div>
+  </div>
+
+  <h2 class="section-title">Rutina de noche</h2>
+  <div class="card">
+    <div class="night-step"><div class="night-time">21:00</div><div class="night-action">Cena terminada con hidrato.</div></div>
+    <div class="night-step"><div class="night-time">21:30</div><div class="night-action">Cierre del día. <strong>Móvil en no molestar.</strong></div></div>
+    <div class="night-step"><div class="night-time">22:00</div><div class="night-action">Luces cálidas. Temperatura <strong>18-19°C.</strong> Sin pantallas pequeñas.</div></div>
+    <div class="night-step"><div class="night-time">22:30</div><div class="night-action">Ducha caliente. Estiramientos cuello/hombros. <strong>Deprax aquí.</strong></div></div>
+    <div class="night-step"><div class="night-time">22:45</div><div class="night-action">Cama. Lectura en papel 10-15 min.</div></div>
+    <div class="night-step"><div class="night-time">23:00</div><div class="night-action"><strong>Luces fuera.</strong></div></div>
+  </div>
+
+  <h2 class="section-title">Higiene del sueño durante el día</h2>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-sub">Mañanas</div>
+      <div class="card-title">Lo más importante</div>
+      <ul style="list-style:none;color:var(--ink-soft);font-size:13px;line-height:1.8">
+        <li>· Luz natural 30 min al despertar</li>
+        <li>· No móvil los primeros 15-20'</li>
+        <li>· Desayuno con proteína y grasa</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-sub">Durante el día</div>
+      <div class="card-title">Mantener el ritmo</div>
+      <ul style="list-style:none;color:var(--ink-soft);font-size:13px;line-height:1.8">
+        <li>· Movimiento cada 60-90 min</li>
+        <li>· Hidratación constante</li>
+        <li>· Cafeína corte 14:00</li>
+        <li>· Luz natural a mediodía</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-sub">Tardes</div>
+      <div class="card-title">Preparar el descenso</div>
+      <ul style="list-style:none;color:var(--ink-soft);font-size:13px;line-height:1.8">
+        <li>· Siestas máx 20' antes 15:30</li>
+        <li>· Cena 20:30-21:00</li>
+        <li>· Sin alcohol entre semana</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 class="section-title">Si te despiertas de madrugada</h2>
+  <div class="tip">
+    <p><strong>Levántate despacio.</strong> Siéntate 10 segundos en el borde de la cama por la hipotensión.</p>
+    <p style="margin-top:6px"><strong>No mires el reloj ni el móvil.</strong> Si en 15-20 min no vuelves a dormir, levántate a otra habitación con luz tenue y haz algo aburrido.</p>
+  </div>
+</div>
+
+<!-- HOGAR -->
+<div class="panel" id="planpanel-hogar">
+  <div class="panel-head">
+    <div class="panel-num">vii.</div>
+    <h1 class="panel-title">El <em>hogar</em> y la rutina</h1>
+    <p class="panel-lead">Casa de campo con 3 perros. Pequeñas dosis diarias mejor que maratones. Viernes tarde libera el finde.</p>
+  </div>
+
+  <h2 class="section-title">Rutina diaria fija</h2>
+  <div class="card">
+    <div class="meal">
+      <div class="meal-time">Mañana</div>
+      <div>
+        <h5>Antes del trabajo</h5>
+        <p>Comida y agua perros. Quitar lavavajillas si está. Cama hecha.</p>
+      </div>
+    </div>
+    <div class="meal">
+      <div class="meal-time">Tarde</div>
+      <div>
+        <h5>Vuelta del trabajo · 5 min reset</h5>
+        <p>Recoger lo que esté tirado. Repaso superficies cocina.</p>
+      </div>
+    </div>
+    <div class="meal">
+      <div class="meal-time">Cena</div>
+      <div>
+        <h5>Después de cenar</h5>
+        <p>Cocina del día. Lavavajillas en marcha si lleno.</p>
+      </div>
+    </div>
+    <div class="meal">
+      <div class="meal-time">Noche</div>
+      <div>
+        <h5>Antes de dormir</h5>
+        <p>Preparar día siguiente: ropa, comida perros.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Reparto semanal</h2>
+  <div class="calendar">
+    <div class="cal-row header"><div>Día</div><div>Tarea</div><div>Tiempo</div></div>
+    <div class="cal-row"><div class="day-name">Lun</div><div class="day-content">1 lavadora colores · barrer zona común</div><div class="day-content">20'</div></div>
+    <div class="cal-row"><div class="day-name">Mar</div><div class="day-content">Aspirar zona perros · baño básico</div><div class="day-content">15'</div></div>
+    <div class="cal-row"><div class="day-name">Mié</div><div class="day-content">1 lavadora oscuros · tender · doblar lunes</div><div class="day-content">25'</div></div>
+    <div class="cal-row"><div class="day-name">Jue</div><div class="day-content">Cocina a fondo · aspirar resto casa</div><div class="day-content">20'</div></div>
+    <div class="cal-row"><div class="day-name">Vie</div><div class="day-content">🏠 Tarde campo · ver abajo</div><div class="day-content">1-1,5h</div></div>
+    <div class="cal-row"><div class="day-name">Sáb</div><div class="day-content">Mínimo mantenimiento</div><div class="day-content">—</div></div>
+    <div class="cal-row"><div class="day-name">Dom</div><div class="day-content">Sábanas · batch cooking</div><div class="day-content">1,5h</div></div>
+  </div>
+
+  <h2 class="section-title">La tarde campo del viernes</h2>
+  <div class="card">
+    <div class="card-sub">16:00-17:30 · viernes</div>
+    <div class="card-title">Bloque doméstico protegido</div>
+    <p style="color:var(--ink-soft);font-size:13px;line-height:1.6;margin-bottom:12px">Sales a las 14:00, comes, descansas, y a las 16:00 atacas en bloque:</p>
+    <ul style="list-style:none;color:var(--ink-soft);font-size:13px;line-height:1.8">
+      <li>· 1-2 lavadoras finales de la semana</li>
+      <li>· Fregar suelos zonas principales</li>
+      <li>· Baños un poco más a fondo</li>
+      <li>· Polvo si toca</li>
+    </ul>
+    <p style="margin-top:12px;font-style:italic;font-family:'Fraunces',serif;color:var(--terracotta);font-size:13px">Inversión que libera el finde entero.</p>
+  </div>
+
+  <h2 class="section-title">Plan mínimo días de migraña</h2>
+  <div class="card" style="border-left:3px solid var(--rose)">
+    <p style="color:var(--ink);font-size:14px;line-height:1.6;margin-bottom:10px">Los días malos, lo único innegociable son los perros. Todo lo demás puede esperar 24-48h:</p>
+    <ul style="list-style:none;color:var(--ink);font-size:13px;line-height:1.8">
+      <li>✅ Comida y agua perros</li>
+      <li>✅ Tomar Deprax</li>
+      <li>❌ Lavadoras, limpieza, cocina elaborada → esperan</li>
+    </ul>
+    <p style="margin-top:12px;font-style:italic;font-family:'Fraunces',serif;color:var(--rose);font-size:13px">Si tu novio está en casa, su momento de tomar el relevo.</p>
+  </div>
+
+  <h2 class="section-title">Inversión clave</h2>
+  <div class="card" style="border-left:3px solid var(--indigo)">
+    <div class="card-sub">Si no lo tienes ya</div>
+    <div class="card-title">Robot aspirador con mopa</div>
+    <p style="color:var(--ink-soft);font-size:13px;line-height:1.6">Con casa de campo y 3 perros, no es capricho. Programado a las 9:00 mientras trabajas. Ahorra 3-5 horas a la semana y reduce alérgenos (importante con migraña).</p>
+    <p style="margin-top:10px;font-size:13px;color:var(--ink-soft)">Opciones: Roomba, Roborock, Dreame · 400-600€</p>
+  </div>
+
+  <h2 class="section-title">Perros</h2>
+  <div class="card">
+    <p style="color:var(--ink-soft);font-size:14px;line-height:1.6">Tu sistema de recordatorios propio ya cubre baño mensual, antiparasitario interno cada 3 meses, collares antiparásitos cada 6 meses. <strong style="font-family:'Fraunces',serif;color:var(--terracotta);font-weight:500">Mantén ese sistema separado</strong>, ya está bien organizado.</p>
+    <p style="margin-top:10px;color:var(--ink-soft);font-size:13px">En crisis: comida y agua diarios son lo único innegociable.</p>
+  </div>
+</div>
+
+<!-- PROGRESO -->
+<div class="panel" id="planpanel-progreso">
+  <div class="panel-head">
+    <div class="panel-num">viii.</div>
+    <h1 class="panel-title">El <em>progreso</em></h1>
+    <p class="panel-lead">2 min al día + 10 min a la semana + 30 min al mes.</p>
+  </div>
+
+  <h2 class="section-title">Qué medir</h2>
+  <div class="grid-2">
+    <div class="metric-block">
+      <h4>Migrañas</h4>
+      <ul>
+        <li><strong>Días de crisis</strong> al mes</li>
+        <li><strong>Intensidad</strong> 0-10</li>
+        <li><strong>Disparadores</strong> identificados</li>
+      </ul>
+    </div>
+    <div class="metric-block">
+      <h4>Cuerpo</h4>
+      <ul>
+        <li><strong>Peso</strong> 1x semana</li>
+        <li><strong>Fitdays</strong> 1x mes</li>
+        <li><strong>Medidas</strong> con cinta 1x mes</li>
+      </ul>
+    </div>
+    <div class="metric-block">
+      <h4>Sueño Garmin</h4>
+      <ul>
+        <li><strong>Puntuación</strong> semanal</li>
+        <li><strong>Hora</strong> dormir/despertar</li>
+        <li><strong>Duración</strong> media</li>
+      </ul>
+    </div>
+    <div class="metric-block">
+      <h4>Recuperación</h4>
+      <ul>
+        <li><strong>VFC nocturna</strong> 7 días</li>
+        <li><strong>Días</strong> bajo rango</li>
+        <li><strong>FC reposo</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 class="section-title">Cómo interpretar las señales</h2>
+  <div class="signal-card green" style="margin-bottom:10px">
+    <h4>🟢 Va bien</h4>
+    <ul>
+      <li>VFC sube o se mantiene en rango</li>
+      <li>Días de crisis bajan</li>
+      <li>Más semanas "Bueno" de sueño</li>
+      <li>Acostarte antes de medianoche 4-5 días</li>
+      <li>% músculo sube, % grasa baja</li>
+      <li>Fuerza progresa</li>
+    </ul>
+  </div>
+  <div class="signal-card yellow" style="margin-bottom:10px">
+    <h4>🟡 Ajustar (no abandonar)</h4>
+    <ul>
+      <li>VFC bajo rango +2 semanas → bajar intensidad</li>
+      <li>Sueño "Aceptable" +4 semanas → revisar rutina</li>
+      <li>Adherencia bajo 60% → plan mal calibrado</li>
+      <li>Peso bajando rápido → comer más</li>
+    </ul>
+  </div>
+  <div class="signal-card red">
+    <h4>🔴 Consultar neurólogo</h4>
+    <ul>
+      <li>Aumento de días o intensidad de crisis</li>
+      <li>Insomnio +6-8 semanas sin mejorar</li>
+      <li>VFC crónica baja sin explicación</li>
+      <li>Pérdida de pelo aumentada</li>
+      <li>Síntomas nuevos sin interpretar</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title">Frecuencia</h2>
+  <div class="grid-4">
+    <div class="card" style="text-align:center">
+      <div class="card-sub">Cada día</div>
+      <div style="font-family:'Fraunces',serif;font-size:28px;color:var(--terracotta);line-height:1;margin-bottom:6px">2'</div>
+      <div style="font-size:11px;color:var(--ink-soft);line-height:1.4">Sueño + energía + pródromo/migraña</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="card-sub">Semanal</div>
+      <div style="font-family:'Fraunces',serif;font-size:28px;color:var(--terracotta);line-height:1;margin-bottom:6px">10'</div>
+      <div style="font-size:11px;color:var(--ink-soft);line-height:1.4">Resumen Garmin + peso</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="card-sub">Mensual</div>
+      <div style="font-family:'Fraunces',serif;font-size:28px;color:var(--terracotta);line-height:1;margin-bottom:6px">30'</div>
+      <div style="font-size:11px;color:var(--ink-soft);line-height:1.4">Fitdays + medidas + reflexión</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="card-sub">Trimestral</div>
+      <div style="font-family:'Fraunces',serif;font-size:28px;color:var(--terracotta);line-height:1;margin-bottom:6px">1h</div>
+      <div style="font-size:11px;color:var(--ink-soft);line-height:1.4">Revisión con neurólogo</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+</div>
+
+<!-- ═══════════ REVISIÓN ═══════════ -->
+<div class="view" id="view-revision">
+  <div class="wrap">
+    <div class="acard">
+      <div class="acard-title te-powder">Cómo funciona la <em>revisión</em></div>
+      <p style="font-size:13px;color:var(--slate-soft);line-height:1.6">
+        Cada 2–4 semanas: <b>1)</b> exporta los datos con el botón de abajo, <b>2)</b> súbelos al proyecto
+        de Claude y di «revisión», <b>3)</b> pega aquí el informe que te devuelva. Claude cruza
+        migrañas × VFC × sueño × entrenamiento y te da máximo 3–4 recomendaciones priorizadas.
+      </p>
+      <button class="btn-main" style="margin-top:14px;background:var(--powder-deep)" onclick="exportForReview()">📤 Exportar datos para revisión</button>
+    </div>
+
+    <div class="acard">
+      <div class="acard-title">Último <em>informe</em></div>
+      <div id="reviewDate" style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--slate-lighter);margin-bottom:10px"></div>
+      <div class="review-text" id="reviewBody"></div>
+      <button class="btn-line" onclick="toggleReviewEdit()" id="reviewEditBtn">✏️ Pegar informe nuevo</button>
+      <div id="reviewEdit" style="display:none;margin-top:10px">
+        <textarea id="reviewTextarea" style="min-height:140px" placeholder="Pega aquí el informe de Claude..."></textarea>
+        <button class="btn-main" style="margin-top:10px" onclick="saveReview()">Guardar informe</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-item active" data-view="hoy" onclick="nav('hoy',this)"><span class="ni">☀️</span>Hoy</button>
+  <button class="nav-item" data-view="migranas" onclick="nav('migranas',this)"><span class="ni">🧠</span>Migrañas</button>
+  <button class="nav-item" data-view="datos" onclick="nav('datos',this)"><span class="ni">📊</span>Datos</button>
+  <button class="nav-item" data-view="plan" onclick="nav('plan',this)"><span class="ni">📖</span>Plan</button>
+  <button class="nav-item" data-view="revision" onclick="nav('revision',this)"><span class="ni">🔍</span>Revisión</button>
+</div>
+
+<!-- SHEET: REGISTRO MIGRAÑA -->
+<div class="sheet-overlay" id="migSheet" onclick="if(event.target===this)closeMigForm()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Registro de <em>migraña</em></div>
+    <div class="ffield"><div class="flabel">Fecha</div><input type="date" id="m-date"></div>
+    <div class="ffield"><div class="flabel">¿Pródromo? (bostezos, antojos, rigidez, sensibilidad)</div><div class="fpills" id="m-prodrome"></div></div>
+    <div class="ffield"><div class="flabel">¿Migraña?</div><div class="fpills" id="m-migraine"></div></div>
+    <div class="subq" id="m-sub">
+      <div class="ffield"><div class="flabel">Intensidad</div><div class="fpills" id="m-intensity"></div></div>
+      <div class="ffield"><div class="flabel">¿Medicación de rescate?</div><div class="fpills" id="m-rescue"></div></div>
+    </div>
+    <div class="ffield"><div class="flabel">Posibles desencadenantes</div><div class="fpills" id="m-triggers"></div></div>
+    <div class="ffield"><div class="flabel">Notas</div><textarea id="m-notes" placeholder="Cómo ha ido el día..."></textarea></div>
+    <button class="btn-main btn-rose" onclick="saveMig()">Guardar</button>
+    <button class="btn-line" id="m-delete" style="display:none" onclick="deleteMig()">Borrar este registro</button>
+    <button class="btn-line" onclick="closeMigForm()">Cancelar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════ STORAGE ═══════════
+var KEY = 'lauri_salud_v1';
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || defaultState(); }
+  catch(e) { return defaultState(); }
+}
+function defaultState() {
+  return { migraines: [], hrv: [], sleepWeeks: [], activities: [], physAge: [], body: [], extras: {}, review: null, weekNow: 'verde' };
+}
+var S = load();
+function save() { localStorage.setItem(KEY, JSON.stringify(S)); }
+
+// One-time migration from old tracker storage
+(function migrate() {
+  if (S.migraines.length) return;
+  try {
+    var old = JSON.parse(localStorage.getItem('lauri_entries') || '[]');
+    old.forEach(function(e) {
+      if (e.migraine !== undefined || e.prodrome !== undefined) {
+        S.migraines.push({ date: e.date, prodrome: e.prodrome, migraine: e.migraine,
+          intensity: e.migraineIntensity, rescue: e.rescue, notes: e.notes, triggers: [] });
+      }
+    });
+    if (S.migraines.length) save();
+  } catch(e) {}
+})();
+
+// ═══════════ NAV ═══════════
+function nav(name, btn) {
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('view-' + name).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'hoy') renderHoy();
+  if (name === 'datos') renderCharts();
+  if (name === 'migranas') { renderCal(); renderMigList(); }
+}
+
+// ═══════════ HELPERS ═══════════
+var MES = { 'Ene':0,'Feb':1,'Mar':2,'Abr':3,'May':4,'Jun':5,'Jul':6,'Ago':7,'Sep':8,'Oct':9,'Nov':10,'Dic':11 };
+var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function iso(y,m,d) { return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0'); }
+function todayISO() { var d = new Date(); return iso(d.getFullYear(), d.getMonth(), d.getDate()); }
+function inferYear(monthIdx, explicit) {
+  if (explicit) return Number(explicit);
+  var now = new Date();
+  return monthIdx > now.getMonth() ? now.getFullYear() - 1 : now.getFullYear();
+}
+function fmtShort(isoStr) {
+  var d = new Date(isoStr + 'T12:00:00');
+  return d.getDate() + ' ' + MESES[d.getMonth()].slice(0,3);
+}
+var toastTimer;
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2400);
+}
+
+// ═══════════ CSV IMPORT ═══════════
+function importCSVs(files) {
+  var log = [];
+  var pending = files.length;
+  Array.prototype.forEach.call(files, function(f) {
+    var reader = new FileReader();
+    reader.onload = function() {
+      var res = parseCSV(reader.result.replace(/^\uFEFF/, ''), f.name);
+      log.push(res);
+      if (--pending === 0) {
+        save();
+        document.getElementById('importLog').innerHTML = log.join('<br>');
+        renderCharts(); renderHoy();
+        toast('Importación completada ✓');
+      }
+    };
+    reader.readAsText(f);
+  });
+}
+
+function parseCSV(text, fname) {
+  var lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
+  if (!lines.length) return '⚠️ ' + fname + ': vacío';
+  var first = lines[0];
+
+  // Title line (single field) → dataset name, header is next line
+  var title = null;
+  if (first.indexOf(',') === -1 || /^[^,]+,*$/.test(first.trim())) {
+    title = first.split(',')[0].trim();
+    lines = lines.slice(1);
+    first = lines[0] || '';
+  }
+
+  if (first.indexOf('VFC durante la noche') !== -1) return parseHRV(lines.slice(1), fname);
+  if (first.indexOf('Pt. media') !== -1) return parseSleep(lines.slice(1), fname);
+  if (first.indexOf('Edad Física') !== -1) return parsePhysAge(lines.slice(1), fname);
+  if (first.indexOf('Tipo de actividad') !== -1) {
+    if (!title) return parseActivities(lines.slice(1), fname);   // counts file has no title
+    return parseExtra(title, lines.slice(1), fname);             // calorías / tiempo / distancia
+  }
+  if (title && title.indexOf('Frecuencia cardiaca') !== -1) return parseExtra(title, lines.slice(1), fname);
+  return '⚠️ ' + fname + ': formato no reconocido (se ignora)';
+}
+
+function mergeByKey(arr, items, keyFn) {
+  var map = {};
+  arr.forEach(function(x) { map[keyFn(x)] = x; });
+  items.forEach(function(x) { map[keyFn(x)] = x; });
+  return Object.keys(map).sort().map(function(k) { return map[k]; });
+}
+
+function parseHRV(rows, fname) {
+  var items = [];
+  rows.forEach(function(r) {
+    var c = r.split(',');
+    var m = c[0] && c[0].match(/(\d{1,2})\s+([A-Za-zé]{3})\.?\s*(\d{4})?/);
+    if (!m || !MES.hasOwnProperty(m[2])) return;
+    var date = iso(inferYear(MES[m[2]], m[3]), MES[m[2]], Number(m[1]));
+    var val = parseInt(c[1]); if (isNaN(val)) val = null;
+    var ref = (c[2]||'').match(/(\d+)ms\s*-\s*(\d+)ms/);
+    var avg = parseInt(c[3]); if (isNaN(avg)) avg = null;
+    items.push({ date: date, v: val, lo: ref?Number(ref[1]):null, hi: ref?Number(ref[2]):null, avg7: avg });
+  });
+  S.hrv = mergeByKey(S.hrv, items, function(x){ return x.date; });
+  return '<b>✓ VFC</b> · ' + items.length + ' días (' + fname + ')';
+}
+
+function parseSleep(rows, fname) {
+  var items = [];
+  rows.forEach(function(r) {
+    var c = r.split(',');
+    if (c.length < 7) return;
+    // end date = last "d Mes [yyyy]" in the range string
+    var ms = c[0].match(/(\d{1,2})\s+([A-Za-zé]{3})\.?\s*(\d{4})?/g);
+    if (!ms) return;
+    var last = ms[ms.length-1].match(/(\d{1,2})\s+([A-Za-zé]{3})\.?\s*(\d{4})?/);
+    if (!MES.hasOwnProperty(last[2])) return;
+    var end = iso(inferYear(MES[last[2]], last[3]), MES[last[2]], Number(last[1]));
+    items.push({ week: c[0], end: end, score: parseInt(c[1])||null, quality: c[2],
+      dur: c[3], need: c[4], bed: c[5], wake: c[6] });
+  });
+  S.sleepWeeks = mergeByKey(S.sleepWeeks, items, function(x){ return x.end; });
+  return '<b>✓ Sueño</b> · ' + items.length + ' semanas (' + fname + ')';
+}
+
+function parsePhysAge(rows, fname) {
+  var items = [];
+  rows.forEach(function(r) {
+    var c = r.split(',');
+    if (!/^\d{4}-\d{2}-\d{2}/.test(c[0]||'')) return;
+    items.push({ date: c[0], age: parseInt(c[1])||null });
+  });
+  S.physAge = mergeByKey(S.physAge, items, function(x){ return x.date; });
+  return '<b>✓ Edad física</b> · ' + items.length + ' semanas (' + fname + ')';
+}
+
+function parseActivities(rows, fname) {
+  var items = [];
+  rows.forEach(function(r) {
+    var c = r.split(',');
+    if (c.length < 3 || !c[0]) return;
+    var m = c[0].match(/([A-Za-zé]{3})\.?\s+(\d{4})/);
+    if (!m || !MES.hasOwnProperty(m[1])) return;
+    var key = m[2] + '-' + String(MES[m[1]]+1).padStart(2,'0');
+    items.push({ month: key, label: c[0].trim(), type: c[1].trim(), n: parseInt(c[2])||0 });
+  });
+  S.activities = mergeByKey(S.activities, items, function(x){ return x.month + '|' + x.type; });
+  return '<b>✓ Actividades</b> · ' + items.length + ' filas (' + fname + ')';
+}
+
+function parseExtra(title, rows, fname) {
+  S.extras[title] = rows;
+  return '<b>✓ ' + title + '</b> · guardado como dato auxiliar (' + fname + ')';
+}
+
+// ═══════════ MIGRAÑAS ═══════════
+var migState = {};
+var MGROUPS = {
+  prodrome: { el: 'm-prodrome', color: 'sel-amber', opts: ['no','yes'], labels: {no:'No', yes:'Sí'} },
+  migraine: { el: 'm-migraine', color: 'sel-rose', opts: ['no','yes'], labels: {no:'No', yes:'Sí'} },
+  intensity: { el: 'm-intensity', color: 'sel-rose', opts: ['leve','moderada','intensa'], labels: {leve:'Leve', moderada:'Moderada', intensa:'Intensa'} },
+  rescue: { el: 'm-rescue', color: 'sel-rose', opts: ['no','yes'], labels: {no:'No', yes:'Sí'} }
+};
+var TRIGGERS = ['Estrés','Sueño','Hormonal','Comida','Tiempo','Tratamiento','Pantallas','Otro'];
+
+function renderMGroup(name) {
+  var g = MGROUPS[name];
+  document.getElementById(g.el).innerHTML = g.opts.map(function(o) {
+    var sel = migState[name] === o ? ' ' + g.color : '';
+    return '<button type="button" class="fpill' + sel + '" onclick="mpick(\'' + name + '\',\'' + o + '\')">' + g.labels[o] + '</button>';
+  }).join('');
+}
+function mpick(name, v) {
+  migState[name] = migState[name] === v ? undefined : v;
+  renderMGroup(name);
+  document.getElementById('m-sub').classList.toggle('open', migState.migraine === 'yes');
+}
+function renderTriggers() {
+  document.getElementById('m-triggers').innerHTML = TRIGGERS.map(function(t) {
+    var sel = (migState.triggers||[]).indexOf(t) !== -1 ? ' sel-slate' : '';
+    return '<button type="button" class="fpill' + sel + '" onclick="ttoggle(\'' + t + '\')">' + t + '</button>';
+  }).join('');
+}
+function ttoggle(t) {
+  migState.triggers = migState.triggers || [];
+  var i = migState.triggers.indexOf(t);
+  if (i === -1) migState.triggers.push(t); else migState.triggers.splice(i,1);
+  renderTriggers();
+}
+
+function openMigForm(dateStr) {
+  var d = dateStr || todayISO();
+  document.getElementById('m-date').value = d;
+  loadMigDate(d);
+  document.getElementById('migSheet').classList.add('open');
+}
+function loadMigDate(d) {
+  var e = S.migraines.filter(function(x){ return x.date === d; })[0];
+  migState = e ? { prodrome: e.prodrome, migraine: e.migraine, intensity: e.intensity,
+    rescue: e.rescue, triggers: (e.triggers||[]).slice() } : { triggers: [] };
+  document.getElementById('m-notes').value = e && e.notes ? e.notes : '';
+  document.getElementById('m-delete').style.display = e ? 'block' : 'none';
+  Object.keys(MGROUPS).forEach(renderMGroup);
+  renderTriggers();
+  document.getElementById('m-sub').classList.toggle('open', migState.migraine === 'yes');
+}
+function closeMigForm() { document.getElementById('migSheet').classList.remove('open'); }
+
+function saveMig() {
+  var d = document.getElementById('m-date').value;
+  if (!d) { toast('Selecciona fecha'); return; }
+  var e = { date: d };
+  if (migState.prodrome) e.prodrome = migState.prodrome;
+  if (migState.migraine) e.migraine = migState.migraine;
+  if (migState.migraine === 'yes') {
+    if (migState.intensity) e.intensity = migState.intensity;
+    if (migState.rescue) e.rescue = migState.rescue;
+  }
+  if (migState.triggers && migState.triggers.length) e.triggers = migState.triggers;
+  var notes = document.getElementById('m-notes').value.trim();
+  if (notes) e.notes = notes;
+  if (Object.keys(e).length === 1) { toast('Registra al menos un dato'); return; }
+  S.migraines = S.migraines.filter(function(x){ return x.date !== d; });
+  S.migraines.push(e);
+  S.migraines.sort(function(a,b){ return a.date.localeCompare(b.date); });
+  save(); closeMigForm(); renderCal(); renderMigList(); renderHoy();
+  toast('Registro guardado ✓');
+}
+function deleteMig() {
+  var d = document.getElementById('m-date').value;
+  if (!confirm('¿Borrar el registro del ' + d + '?')) return;
+  S.migraines = S.migraines.filter(function(x){ return x.date !== d; });
+  save(); closeMigForm(); renderCal(); renderMigList(); renderHoy();
+  toast('Registro borrado');
+}
+
+function phase(e) {
+  if (!e) return null;
+  if (e.migraine === 'yes') return 'migraine';
+  if (e.prodrome === 'yes') return 'prodrome';
+  if (e.migraine === 'no' || e.prodrome === 'no') return 'good';
+  return null;
+}
+
+// Calendar
+var calY = new Date().getFullYear(), calM = new Date().getMonth();
+function chMonth(d) {
+  calM += d;
+  if (calM < 0) { calM = 11; calY--; } if (calM > 11) { calM = 0; calY++; }
+  renderCal();
+}
+function renderCal() {
+  document.getElementById('calLabel').textContent = MESES[calM][0].toUpperCase() + MESES[calM].slice(1) + ' ' + calY;
+  var map = {};
+  S.migraines.forEach(function(e){ map[e.date] = e; });
+  var firstDow = (new Date(calY, calM, 1).getDay() + 6) % 7; // Monday first
+  var nDays = new Date(calY, calM+1, 0).getDate();
+  var html = '';
+  for (var i = 0; i < firstDow; i++) html += '<div class="cday empty"></div>';
+  var tISO = todayISO();
+  for (var d = 1; d <= nDays; d++) {
+    var k = iso(calY, calM, d);
+    var p = phase(map[k]);
+    var cls = p ? ' c-' + p : '';
+    if (k === tISO) cls += ' c-today';
+    html += '<div class="cday' + cls + '" onclick="openMigForm(\'' + k + '\')">' + d + '</div>';
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function renderMigList() {
+  var c = document.getElementById('migList');
+  var list = S.migraines.slice().sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0, 15);
+  if (!list.length) {
+    c.innerHTML = '<div class="empty7">Aún no hay registros.<br>Con pródromo y migraña sí/no por día ya tienes lo esencial.</div>';
+    return;
+  }
+  var bl = { good: ['bb-good','Día bueno'], prodrome: ['bb-prodrome','Pródromo'], migraine: ['bb-migraine','Migraña'] };
+  c.innerHTML = list.map(function(e) {
+    var p = phase(e) || 'good';
+    var tags = [];
+    if (e.intensity) tags.push(e.intensity);
+    if (e.rescue === 'yes') tags.push('💊 rescate');
+    (e.triggers||[]).forEach(function(t){ tags.push(t); });
+    return '<div class="ecard" onclick="openMigForm(\'' + e.date + '\')">' +
+      '<div class="etop"><div class="edate">' + fmtShort(e.date) + '</div>' +
+      '<div class="ebadge ' + bl[p][0] + '">' + bl[p][1] + '</div></div>' +
+      (tags.length ? '<div class="etags">' + tags.map(function(t){ return '<span class="etag">' + t + '</span>'; }).join('') + '</div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+// ═══════════ BODY / FITDAYS (vía mediciones.json de Claude) ═══════════
+// Campos por medición: date, weight, bmi, fatPct, muscleKg, skeletalPct,
+// waterPct, visceral, bmr, subFatPct, proteinPct, boneKg, bodyAge
+var BODY_METRICS = {
+  weight:    ['Peso', 'kg',  '#8b6a2e'],
+  muscleKg:  ['Músculo', 'kg', '#5e7a59'],
+  fatPct:    ['Grasa', '%', '#b87878'],
+  bmi:       ['IMC', '', '#4a7a90']
+};
+var bodyMetric = 'weight';
+function setBodyMetric(m) { bodyMetric = m; renderCharts(); }
+
+function importBody(files) {
+  if (!files.length) return;
+  var r = new FileReader();
+  r.onload = function() {
+    try {
+      var data = JSON.parse(r.result);
+      var items = Array.isArray(data) ? data : (data.mediciones || []);
+      items = items.filter(function(x){ return x.date && x.weight; });
+      if (!items.length) throw new Error('vacío');
+      S.body = mergeByKey(S.body, items, function(x){ return x.date; });
+      save(); renderCharts(); renderHoy();
+      toast(items.length + ' medición(es) importada(s) ✓');
+    } catch(e) { toast('Archivo de mediciones no válido'); }
+  };
+  r.readAsText(files[0]);
+}
+
+function renderBodyLast() {
+  var el = document.getElementById('bodyLast');
+  var b = S.body.slice(-1)[0];
+  if (!b) { el.innerHTML = ''; return; }
+  var prev = S.body.slice(-2)[0];
+  function row(label, key, unit) {
+    if (b[key] === undefined) return '';
+    var delta = '';
+    if (prev && prev !== b && prev[key] !== undefined) {
+      var d = Math.round((b[key] - prev[key]) * 10) / 10;
+      if (d !== 0) delta = ' <span style="color:' + (d > 0 ? 'var(--sage-deep)' : 'var(--rose-deep)') + '">' + (d > 0 ? '+' : '') + d + '</span>';
+    }
+    return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--border);font-size:13px">' +
+      '<span style="color:var(--slate-soft)">' + label + '</span><span>' + b[key] + unit + delta + '</span></div>';
+  }
+  el.innerHTML =
+    '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--slate-lighter);margin-bottom:6px">Última medición · ' + fmtShort(b.date) + '</div>' +
+    row('Peso','weight',' kg') + row('IMC','bmi','') + row('Masa muscular','muscleKg',' kg') +
+    row('Grasa corporal','fatPct',' %') + row('Músculo esquelético','skeletalPct',' %') +
+    row('Agua','waterPct',' %') + row('Grasa visceral','visceral','') +
+    row('BMR','bmr',' kcal') + row('Proteína','proteinPct',' %') + row('Edad corporal','bodyAge','');
+}
+
+// ═══════════ CHARTS (SVG) ═══════════
+function svgLine(data, opts) {
+  // data: [{x label?, v, lo?, hi?}] — line with optional reference band
+  if (!data.length) return '<div class="empty7">Sin datos todavía — importa un CSV.</div>';
+  var W = 480, H = 130, P = 26;
+  var vals = [];
+  data.forEach(function(d) {
+    if (d.v !== null && d.v !== undefined) vals.push(d.v);
+    if (d.lo) vals.push(d.lo); if (d.hi) vals.push(d.hi);
+  });
+  if (!vals.length) return '<div class="empty7">Sin valores.</div>';
+  var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+  if (min === max) { min -= 1; max += 1; }
+  var pad = (max - min) * 0.12; min -= pad; max += pad;
+  function X(i) { return P + i * (W - 2*P) / Math.max(1, data.length - 1); }
+  function Y(v) { return H - P - (v - min) * (H - 2*P) / (max - min); }
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto">';
+  // reference band
+  if (opts && opts.band) {
+    var bandPts = data.map(function(d,i){ return d.hi !== null && d.hi !== undefined ? X(i)+','+Y(d.hi) : null; }).filter(Boolean);
+    var bandPts2 = data.map(function(d,i){ return d.lo !== null && d.lo !== undefined ? X(i)+','+Y(d.lo) : null; }).filter(Boolean).reverse();
+    if (bandPts.length > 1) s += '<polygon points="' + bandPts.join(' ') + ' ' + bandPts2.join(' ') + '" fill="rgba(168,191,212,0.22)"/>';
+  }
+  // line (skip nulls by segmenting)
+  var seg = [];
+  var segs = [];
+  data.forEach(function(d, i) {
+    if (d.v === null || d.v === undefined) { if (seg.length) segs.push(seg); seg = []; }
+    else seg.push(X(i) + ',' + Y(d.v));
+  });
+  if (seg.length) segs.push(seg);
+  segs.forEach(function(sg) {
+    if (sg.length === 1) s += '<circle cx="' + sg[0].split(',')[0] + '" cy="' + sg[0].split(',')[1] + '" r="2.5" fill="' + (opts.color||'#4a7a90') + '"/>';
+    else s += '<polyline points="' + sg.join(' ') + '" fill="none" stroke="' + (opts.color||'#4a7a90') + '" stroke-width="2"/>';
+  });
+  // min/max labels
+  s += '<text x="2" y="' + (Y(max-pad)+4) + '" font-size="10" fill="#a0aec0">' + Math.round(max-pad) + '</text>';
+  s += '<text x="2" y="' + (Y(min+pad)+4) + '" font-size="10" fill="#a0aec0">' + Math.round(min+pad) + '</text>';
+  // first/last x labels
+  if (opts && opts.labels) {
+    s += '<text x="' + P + '" y="' + (H-6) + '" font-size="10" fill="#a0aec0">' + opts.labels[0] + '</text>';
+    s += '<text x="' + (W-P) + '" y="' + (H-6) + '" font-size="10" fill="#a0aec0" text-anchor="end">' + opts.labels[1] + '</text>';
+  }
+  return s + '</svg>';
+}
+
+function svgBars(items, color, maxLabelEvery) {
+  if (!items.length) return '<div class="empty7">Sin datos todavía — importa un CSV.</div>';
+  var W = 480, H = 130, P = 24;
+  var max = Math.max.apply(null, items.map(function(i){ return i.v; })) || 1;
+  var bw = (W - 2*P) / items.length;
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto">';
+  items.forEach(function(it, i) {
+    var h = (it.v / max) * (H - 2*P - 14);
+    var x = P + i*bw + bw*0.15, y = H - P - h;
+    s += '<rect x="' + x + '" y="' + y + '" width="' + (bw*0.7) + '" height="' + h + '" rx="3" fill="' + color + '"/>';
+    s += '<text x="' + (x + bw*0.35) + '" y="' + (y - 4) + '" font-size="9" fill="#718096" text-anchor="middle">' + it.v + '</text>';
+    if (i % (maxLabelEvery||1) === 0) s += '<text x="' + (x + bw*0.35) + '" y="' + (H-8) + '" font-size="8.5" fill="#a0aec0" text-anchor="middle">' + it.l + '</text>';
+  });
+  return s + '</svg>';
+}
+
+// ─── PERIODOS ───
+var PERIODS = { '1M': 31, '3M': 92, '6M': 183, '1A': 365 };
+var period = '3M';
+function setPeriod(p) { period = p; renderCharts(); }
+function cutoff(daysBack) {
+  var d = new Date(); d.setDate(d.getDate() - daysBack);
+  return iso(d.getFullYear(), d.getMonth(), d.getDate());
+}
+function avg(arr) { return arr.length ? Math.round(arr.reduce(function(s,v){return s+v;},0) / arr.length * 10) / 10 : null; }
+
+function periodStats(from, to) {
+  var inWin = function(d) { return d >= from && d < to; };
+  var hrvVals = S.hrv.filter(function(x){ return inWin(x.date) && x.v !== null; }).map(function(x){ return x.v; });
+  var slVals = S.sleepWeeks.filter(function(x){ return inWin(x.end) && x.score; }).map(function(x){ return x.score; });
+  var sess = S.activities.filter(function(a){ return inWin(a.month + '-15'); }).reduce(function(s,a){ return s+a.n; }, 0);
+  var migs = S.migraines.filter(function(e){ return inWin(e.date) && e.migraine === 'yes'; }).length;
+  var bodyIn = S.body.filter(function(b){ return inWin(b.date); });
+  return { hrv: avg(hrvVals), sleep: avg(slVals), sessions: sess, migs: migs,
+    weight: bodyIn.length ? bodyIn[bodyIn.length-1].weight : null };
+}
+
+function renderPeriodUI() {
+  document.getElementById('periodPills').innerHTML = Object.keys(PERIODS).map(function(p) {
+    var lbl = { '1M':'Mensual', '3M':'Trimestral', '6M':'Semestral', '1A':'Anual' }[p];
+    return '<button class="fpill' + (period === p ? ' sel-slate' : '') + '" onclick="setPeriod(\'' + p + '\')">' + lbl + '</button>';
+  }).join('');
+
+  var days = PERIODS[period];
+  var cur = periodStats(cutoff(days), '9999');
+  var prev = periodStats(cutoff(days * 2), cutoff(days));
+  function cmp(label, c, p, unit, upGood) {
+    if (c === null && p === null) return '';
+    var delta = '';
+    if (c !== null && p !== null) {
+      var d = Math.round((c - p) * 10) / 10;
+      var good = upGood ? d >= 0 : d <= 0;
+      if (d !== 0) delta = '<span style="color:' + (good ? 'var(--sage-deep)' : 'var(--rose-deep)') + ';font-size:12px"> ' + (d > 0 ? '▲ +' : '▼ ') + d + '</span>';
+      else delta = '<span style="color:var(--slate-lighter);font-size:12px"> =</span>';
+    }
+    return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border);font-size:13px">' +
+      '<span style="color:var(--slate-soft)">' + label + '</span>' +
+      '<span>' + (c === null ? '–' : c + unit) + delta +
+      '<span style="color:var(--slate-lighter);font-size:11px"> (antes: ' + (p === null ? '–' : p + unit) + ')</span></span></div>';
+  }
+  document.getElementById('periodCompare').innerHTML =
+    '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--slate-lighter);margin-bottom:4px">Este periodo vs el anterior</div>' +
+    cmp('VFC media', cur.hrv, prev.hrv, ' ms', true) +
+    cmp('Puntuación sueño', cur.sleep, prev.sleep, '', true) +
+    cmp('Sesiones de actividad', cur.sessions, prev.sessions, '', true) +
+    cmp('Días de migraña', cur.migs, prev.migs, '', false) +
+    cmp('Peso', cur.weight, prev.weight, ' kg', true);
+}
+
+function renderCharts() {
+  renderPeriodUI();
+  var from = cutoff(PERIODS[period]);
+
+  // HRV daily within period
+  var hrv = S.hrv.filter(function(x){ return x.date >= from; });
+  document.getElementById('chartHRV').innerHTML = svgLine(hrv, {
+    band: true, color: '#4a7a90',
+    labels: hrv.length ? [fmtShort(hrv[0].date), fmtShort(hrv[hrv.length-1].date)] : null
+  }) + (hrv.length ? '<div class="chart-cap">Línea: VFC nocturna · banda: tu rango de referencia</div>' : '');
+
+  // Sleep weekly within period
+  var sw = S.sleepWeeks.filter(function(w){ return w.end >= from; })
+    .map(function(w){ return { v: w.score || 0, l: fmtShort(w.end) }; });
+  document.getElementById('chartSleep').innerHTML = svgBars(sw, '#a8bfd4', Math.max(1, Math.ceil(sw.length / 6))) +
+    (sw.length ? '<div class="chart-cap">Puntuación Garmin por semana (80+ = Bueno)</div>' : '');
+
+  // Activities monthly within period
+  var byMonth = {};
+  S.activities.forEach(function(a) { if ((a.month + '-28') >= from) byMonth[a.month] = (byMonth[a.month]||0) + a.n; });
+  var months = Object.keys(byMonth).sort();
+  var act = months.map(function(m){ return { v: byMonth[m], l: m.slice(5) + '/' + m.slice(2,4) }; });
+  document.getElementById('chartAct').innerHTML = svgBars(act, '#8fa88a', Math.max(1, Math.ceil(act.length / 8))) +
+    (act.length ? '<div class="chart-cap">Sesiones registradas por mes (todas las actividades)</div>' : '');
+
+  // Body metric selector + chart within period
+  document.getElementById('bodyMetricPills').innerHTML = Object.keys(BODY_METRICS).map(function(m) {
+    return '<button class="fpill' + (bodyMetric === m ? ' sel-amber' : '') + '" onclick="setBodyMetric(\'' + m + '\')">' + BODY_METRICS[m][0] + '</button>';
+  }).join('');
+  var met = BODY_METRICS[bodyMetric];
+  var bodyIn = S.body.filter(function(b){ return b.date >= from && b[bodyMetric] !== undefined; });
+  var bd = bodyIn.map(function(b){ return { v: b[bodyMetric] }; });
+  var bl = bodyIn.length ? [fmtShort(bodyIn[0].date), fmtShort(bodyIn[bodyIn.length-1].date)] : null;
+  document.getElementById('chartBody').innerHTML = svgLine(bd, { color: met[2], labels: bl }) +
+    (bd.length ? '<div class="chart-cap">' + met[0] + (met[1] ? ' (' + met[1] + ')' : '') + ' · con tu IMC, subir peso y músculo es el objetivo</div>' : '');
+  renderBodyLast();
+  renderBackupStatus();
+}
+
+// ═══════════ HOY ═══════════
+var WEEKDEF = {
+  verde: ['🟢 Verde', 'Plan completo: 4 entrenos + caminar diario.'],
+  amarilla: ['🟡 Amarilla', 'Mantén estructura, baja intensidad. Post-tratamiento o premenstrual.'],
+  roja: ['🔴 Roja', 'Crisis activa: supervivencia y mínimo daño. No entrenas.'],
+  recuperacion: ['💙 Recuperación', 'Vuelta progresiva. Nunca compensar lo perdido.']
+};
+function setWeek(w) { S.weekNow = w; save(); renderHoy(); }
+function renderHoy() {
+  document.getElementById('appDate').textContent = (function() {
+    var n = new Date();
+    var days = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    return days[n.getDay()] + ', ' + n.getDate() + ' de ' + MESES[n.getMonth()];
+  })();
+
+  document.getElementById('weekPills').innerHTML = Object.keys(WEEKDEF).map(function(w) {
+    var on = S.weekNow === w ? ' on-' + w : '';
+    return '<button class="wpill' + on + '" onclick="setWeek(\'' + w + '\')">' + WEEKDEF[w][0] + '</button>';
+  }).join('');
+  document.getElementById('weekHint').textContent = WEEKDEF[S.weekNow][1];
+
+  var cards = [];
+
+  // Racha sin migraña
+  var sorted = S.migraines.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var streak = null;
+  if (sorted.length) {
+    var lastM = sorted.filter(function(e){ return e.migraine === 'yes'; })[0];
+    if (lastM) {
+      streak = Math.floor((new Date(todayISO()) - new Date(lastM.date)) / 86400000);
+    } else streak = '∞';
+  }
+  cards.push(card('Días sin migraña', streak === null ? '–' : streak, streak === null ? 'sin registros aún' : 'desde la última crisis',
+    streak === null ? '' : (streak === '∞' || streak >= 7 ? 'hs-green' : (streak >= 3 ? 'hs-yellow' : 'hs-red'))));
+
+  // VFC
+  var lastH = S.hrv.filter(function(h){ return h.avg7 !== null; }).slice(-1)[0];
+  if (lastH) {
+    var inRange = lastH.lo !== null && lastH.avg7 >= lastH.lo;
+    cards.push(card('VFC media 7d', lastH.avg7 + '<small> ms</small>',
+      lastH.lo ? 'rango ' + lastH.lo + '–' + lastH.hi + ' ms · ' + fmtShort(lastH.date) : fmtShort(lastH.date),
+      inRange ? 'hs-green' : 'hs-red'));
+  } else cards.push(card('VFC media 7d', '–', 'importa el CSV de VFC', ''));
+
+  // Sueño
+  var lastS = S.sleepWeeks.slice(-1)[0];
+  if (lastS) {
+    cards.push(card('Sueño últ. semana', (lastS.score||'–'), lastS.dur + ' · cama a las ' + lastS.bed,
+      lastS.score >= 80 ? 'hs-green' : 'hs-yellow'));
+  } else cards.push(card('Sueño últ. semana', '–', 'importa el CSV de sueño', ''));
+
+  // Fuerza mes actual
+  var now = new Date();
+  var mk = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  var gym = S.activities.filter(function(a){ return a.month === mk && /Gimnasio/i.test(a.type); })
+    .reduce(function(s,a){ return s + a.n; }, 0);
+  var anyThisMonth = S.activities.some(function(a){ return a.month === mk; });
+  cards.push(card('Fuerza este mes', anyThisMonth ? gym : '–', anyThisMonth ? 'sesiones de gimnasio' : 'sin datos del mes',
+    gym >= 8 ? 'hs-green' : (gym >= 4 ? 'hs-yellow' : '')));
+
+  // Peso
+  var lastB = S.body.slice(-1)[0];
+  if (lastB) cards.push(card('Peso', lastB.weight + '<small> kg</small>',
+    (lastB.muscleKg ? lastB.muscleKg + ' kg músculo · ' : '') + fmtShort(lastB.date), 'hs-green'));
+
+  document.getElementById('hoyStats').innerHTML = cards.join('');
+
+  // Señales
+  var sig = [];
+  if (lastH && lastH.lo !== null && lastH.avg7 < lastH.lo)
+    sig.push(['🔴', 'VFC bajo tu rango: la semana pasa a amarilla. Menos intensidad, más sueño.']);
+  if (lastS && lastS.bed) {
+    var bp = lastS.bed.split(':');
+    var bh = parseInt(bp[0]), bm = parseInt(bp[1]) || 0;
+    // 00:30–05:59 cuenta como tarde (objetivo del plan: 23:00–23:30)
+    if (bh >= 0 && bh < 6 && (bh > 0 || bm >= 30))
+      sig.push(['🟡', 'Hora media de dormir ' + lastS.bed + ' — el objetivo del plan es 23:00–23:30. Es tu palanca nº 1.']);
+  }
+  if (lastS && lastS.dur) {
+    var dm = lastS.dur.match(/(\d+)h\s*(\d+)?/);
+    if (dm && Number(dm[1]) < 7) sig.push(['🟡', 'Duración media ' + lastS.dur + ' frente a una necesidad de ' + lastS.need + '. Déficit acumulándose.']);
+  }
+  var hasData = S.hrv.length || S.migraines.length || S.body.length;
+  if (hasData) {
+    var bDays = S.lastBackup ? Math.floor((new Date(todayISO()) - new Date(S.lastBackup)) / 86400000) : 999;
+    if (bDays > 21) sig.push(['💾', 'Hace tiempo de la última copia de seguridad. Exporta una desde Datos.']);
+  }
+  if (!sig.length) sig.push(['🟢', 'Sin alertas con los datos actuales. Sigue igual.']);
+  document.getElementById('hoySignals').innerHTML = sig.map(function(s) {
+    return '<div class="signal-line"><span class="sd">' + s[0] + '</span><span>' + s[1] + '</span></div>';
+  }).join('');
+}
+function card(label, value, sub, cls) {
+  return '<div class="hstat ' + (cls||'') + '"><div class="hl">' + label + '</div><div class="hv">' + value + '</div><div class="hs">' + sub + '</div></div>';
+}
+
+// ═══════════ BACKUP / EXPORT ═══════════
+function download(content, name, type) {
+  var blob = new Blob([content], { type: type || 'application/json' });
+  var file = new File([blob], name, { type: blob.type });
+  // En iOS abre la hoja de compartir: un tap y "Guardar en Archivos" / iCloud
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({ files: [file], title: name }).catch(function() {});
+    return;
+  }
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+function exportBackup() {
+  S.lastBackup = todayISO(); save();
+  download(JSON.stringify(S, null, 1), 'lauri_salud_backup_' + todayISO() + '.json');
+  renderBackupStatus();
+  toast('Copia exportada ✓');
+}
+function renderBackupStatus() {
+  var el = document.getElementById('backupStatus');
+  if (!el) return;
+  if (!S.lastBackup) { el.textContent = 'Sin copias todavía.'; return; }
+  var days = Math.floor((new Date(todayISO()) - new Date(S.lastBackup)) / 86400000);
+  el.textContent = 'Última copia: ' + fmtShort(S.lastBackup) + (days > 21 ? ' — hace ' + days + ' días, toca renovarla' : '');
+}
+function importBackup(files) {
+  if (!files.length) return;
+  var r = new FileReader();
+  r.onload = function() {
+    try {
+      var data = JSON.parse(r.result);
+      if (!data.migraines && !data.hrv) throw new Error('formato');
+      if (!confirm('Esto reemplaza todos los datos actuales. ¿Continuar?')) return;
+      S = Object.assign(defaultState(), data);
+      save(); renderHoy(); renderCharts(); renderCal(); renderMigList(); renderReview();
+      toast('Copia restaurada ✓');
+    } catch(e) { toast('Archivo no válido'); }
+  };
+  r.readAsText(files[0]);
+}
+function exportForReview() {
+  var payload = {
+    exportado: todayISO(), semanaActual: S.weekNow,
+    migranas: S.migraines, vfc: S.hrv, suenoSemanal: S.sleepWeeks,
+    actividades: S.activities, edadFisica: S.physAge, composicionCorporal: S.body
+  };
+  download(JSON.stringify(payload, null, 1), 'lauri_revision_' + todayISO() + '.json');
+  toast('Archivo de revisión exportado ✓');
+}
+
+// ═══════════ REVISIÓN ═══════════
+function renderReview() {
+  var rd = document.getElementById('reviewDate'), rb = document.getElementById('reviewBody');
+  if (S.review && S.review.text) {
+    rd.textContent = 'Guardado el ' + S.review.date;
+    rb.innerHTML = mdLite(S.review.text);
+  } else {
+    rd.textContent = '';
+    rb.innerHTML = '<div class="empty7">Aún no hay informe.<br>Exporta tus datos, pídele a Claude una «revisión» y pega aquí el resultado.</div>';
+  }
+}
+function mdLite(t) {
+  return t.split(/\n/).map(function(l) {
+    l = l.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    l = l.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    if (/^#{1,3}\s/.test(l)) return '<h3>' + l.replace(/^#{1,3}\s/, '') + '</h3>';
+    if (/^[-•]\s/.test(l)) return '<li>' + l.replace(/^[-•]\s/, '') + '</li>';
+    if (!l.trim()) return '';
+    return '<p>' + l + '</p>';
+  }).join('');
+}
+function toggleReviewEdit() {
+  var e = document.getElementById('reviewEdit');
+  e.style.display = e.style.display === 'none' ? 'block' : 'none';
+  if (e.style.display === 'block' && S.review) document.getElementById('reviewTextarea').value = S.review.text;
+}
+function saveReview() {
+  var t = document.getElementById('reviewTextarea').value.trim();
+  if (!t) { toast('Pega el informe primero'); return; }
+  S.review = { date: todayISO(), text: t };
+  save(); renderReview();
+  document.getElementById('reviewEdit').style.display = 'none';
+  toast('Informe guardado ✓');
+}
+
+// ═══════════ PLAN TABS (scoped) ═══════════
+(function() {
+  var ptabs = document.querySelectorAll('#view-plan .tab');
+  var ppanels = document.querySelectorAll('#view-plan .panel');
+  ptabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var target = tab.dataset.tab;
+      ptabs.forEach(function(t){ t.classList.toggle('active', t === tab); });
+      ppanels.forEach(function(p){ p.classList.toggle('active', p.id === 'planpanel-' + target); });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+})();
+
+// ═══════════ INIT ═══════════
+renderHoy(); renderCharts(); renderCal(); renderMigList(); renderReview();
+
+// ─── PWA: offline + almacenamiento persistente ───
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().then(function(granted) {
+    if (granted) console.log('Almacenamiento persistente concedido');
+  });
+}
+</script>
+
+</body>
+</html>
